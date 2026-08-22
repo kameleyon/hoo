@@ -157,6 +157,30 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 node scripts/smoke-stripe.mjs      # checkout + signature checks, no CLI needed
 ```
 
+## Database
+
+Supabase (`pljmjyeftdhjvcxppxdi`). Two tables, deliberately separate:
+
+| Table | Owner | Reader may |
+| --- | --- | --- |
+| `profiles` | the reader | read, insert and update their own row |
+| `subscriptions` | Stripe | **read only** — there is no write policy at all |
+
+That split is the point. If billing state were a column on `profiles`, the one
+UPDATE policy that lets someone save their birthday would also let them set
+`status = 'active'` and take Pro for free. The webhook writes `subscriptions`
+with the secret key, which bypasses RLS; nothing else can write it.
+
+`is_pro()` is the single definition of Pro (active or trialing), so it cannot
+drift between call sites. A profile row is created by a trigger on signup, and
+the database — not just the app — rejects an impossible birthday or a card code
+that is not one of the fifty-two.
+
+```bash
+npm run db:push            # apply migrations
+npm run supabase:smoke     # prove RLS holds, including that a reader cannot self-upgrade
+```
+
 ## Not connected yet
 
 - **Fulfilment.** The PDF and the narration are the actual product and need a

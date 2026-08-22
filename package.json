@@ -10,9 +10,13 @@
     "typecheck": "tsc --noEmit",
     "data": "node scripts/build-card-data.mjs",
     "stripe:setup": "node --env-file=.env.local scripts/setup-stripe-prices.mjs",
-    "stripe:smoke": "node scripts/smoke-stripe.mjs"
+    "stripe:smoke": "node scripts/smoke-stripe.mjs",
+    "supabase:smoke": "node --env-file=.env.local scripts/smoke-supabase.mjs",
+    "db:push": "supabase db push"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
     "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -23,6 +27,7 @@
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "supabase": "^2.115.0",
     "typescript": "^5.7.0"
   }
 }
