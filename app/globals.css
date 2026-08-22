@@ -3247,6 +3247,38 @@ textarea.control {
   max-width: 420px;
 }
 
+.spell__result {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 22px;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--line-panel);
+  border-radius: 8px;
+  max-width: 480px;
+}
+
+/* The md face is normally used on the navy panels; on paper it needs the
+   white stock and the hairline the other light faces have. */
+.spell__result .face--md {
+  background: var(--white);
+  border: 1px solid var(--line-face);
+  box-shadow: 0 10px 24px rgba(14, 26, 46, 0.1);
+}
+
+.spell__result-name {
+  font-family: var(--display);
+  font-size: 30px;
+  line-height: 1.1;
+  margin-top: 6px;
+  color: var(--ink);
+}
+
+.spell__result .set-birthday {
+  margin-top: 12px;
+}
+
 .spell__total-number {
   font-family: var(--display);
   font-size: 34px;

@@ -114,7 +114,44 @@ export function spell(text: string): SpelledLetter[] {
   return out;
 }
 
-/** The sum of a name's letter values. */
+/** The sum of a name's letter values, before it is brought back into the deck. */
 export function wordValue(text: string): number {
   return spell(text).reduce((total, l) => total + l.value, 0);
+}
+
+export interface WordReading {
+  letters: SpelledLetter[];
+  /** The raw sum of every letter. */
+  total: number;
+  /** How many times a full deck was subtracted to get back inside 1–52. */
+  wraps: number;
+  /** The reduced solar value, 1–52. Zero letters gives null. */
+  value: number | null;
+  card: CardIndexEntry | null;
+}
+
+/**
+ * A name reduced to its card.
+ *
+ * The cipher runs 1–52, one value per card, so a total past the end of the deck
+ * wraps around it: subtract fifty-two until it lands back inside. A total that
+ * is an exact multiple reads as 52 rather than 0, because there is no card
+ * numbered zero.
+ *
+ * The arithmetic is returned alongside the answer, not just the answer, so the
+ * reduction can be checked rather than taken on trust.
+ */
+export function readWord(text: string): WordReading {
+  const letters = spell(text);
+  const total = letters.reduce((sum, l) => sum + l.value, 0);
+
+  if (letters.length === 0) {
+    return { letters, total: 0, wraps: 0, value: null, card: null };
+  }
+
+  const remainder = total % 52;
+  const value = remainder === 0 ? 52 : remainder;
+  const wraps = Math.floor((total - value) / 52);
+
+  return { letters, total, wraps, value, card: cardForSolarValue(value) };
 }

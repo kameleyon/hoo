@@ -3,20 +3,22 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { spell, wordValue } from '@/lib/reference';
+import { CardFace } from './CardFace';
+import { cardSubtitle } from '@/lib/cardology';
+import { readWord } from '@/lib/reference';
 
 /**
- * Takes a name or a word apart into its cards.
+ * Takes a name or a word apart into its cards, then puts it back together.
  *
- * Each letter carries a solar value and a card; the running total is the word's
- * value. What that total then *reduces* to is a separate rule the reference
- * does not state, so nothing here claims a single card for the whole name.
+ * Each letter carries a solar value; the sum is the word's value; the sum wraps
+ * around the fifty-two to land on one card. The arithmetic is shown rather than
+ * hidden, so the reduction can be checked at a glance.
  */
 export function NameValue() {
   const [text, setText] = useState('Haus of Oracle');
 
-  const letters = useMemo(() => spell(text), [text]);
-  const total = useMemo(() => wordValue(text), [text]);
+  const reading = useMemo(() => readWord(text), [text]);
+  const { letters, total, wraps, value, card } = reading;
   const skipped = useMemo(
     () => [...text].filter((c) => c.trim() && !letters.some((l) => l.letter === c)).length,
     [text, letters],
@@ -65,10 +67,31 @@ export function NameValue() {
             <span className="spell__total-number">{total}</span>
           </p>
 
+          {card && value !== null && (
+            <div className="spell__result">
+              <CardFace card={card} variant="md" />
+              <div className="spell__result-body">
+                <p className="label label--tight">
+                  {wraps === 0
+                    ? `Value ${total}`
+                    : `${total} ${'− 52 '.repeat(wraps).trim()} = ${value}`}
+                </p>
+                <p className="spell__result-name">{card.name}</p>
+                <p className="subtitle">{cardSubtitle(card)}</p>
+                <Link href={`/deck/${card.code}`} className="set-birthday">
+                  Read the full card →
+                </Link>
+              </div>
+            </div>
+          )}
+
           <p className="fineprint" style={{ textAlign: 'left' }}>
             {letters.length} letter{letters.length === 1 ? '' : 's'} counted
             {skipped > 0 ? `, ${skipped} character${skipped === 1 ? '' : 's'} outside the cipher ignored` : ''}
             . Case matters: lower case runs Hearts then Clubs, upper case Diamonds then Spades.
+            {wraps > 0
+              ? ` The total runs past the end of the deck, so it wraps: fifty-two subtracted ${wraps === 1 ? 'once' : wraps === 2 ? 'twice' : `${wraps} times`} lands on ${value}.`
+              : ''}
           </p>
         </>
       )}

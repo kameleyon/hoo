@@ -6,6 +6,7 @@ import { ChipFace } from './CardFace';
 import { MonthDaySelect } from './MonthDaySelect';
 import { useAccount } from './AccountProvider';
 import { cardForKey } from '@/lib/cardology';
+import { readWord } from '@/lib/reference';
 import { FIELD_PLACEHOLDER } from '@/lib/reports';
 import type { ReportDefinition } from '@/lib/reports';
 import type { DayKey } from '@/lib/types';
@@ -118,19 +119,36 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
                 );
               }
 
+              // A name carries a card too: every letter has a solar value, and
+              // the total wraps around the fifty-two onto one of them.
+              const named = readWord(value);
               return (
                 <div key={f.key} className="field">
                   <label className="field__label" htmlFor={`f-${f.key}`}>
                     {f.label}
                   </label>
-                  <input
-                    id={`f-${f.key}`}
-                    type="text"
-                    className="control"
-                    placeholder={FIELD_PLACEHOLDER[f.key]}
-                    value={value}
-                    onChange={(e) => set(f.key, e.target.value)}
-                  />
+                  <div className="field__date">
+                    <input
+                      id={`f-${f.key}`}
+                      type="text"
+                      className="control"
+                      placeholder={FIELD_PLACEHOLDER[f.key]}
+                      value={value}
+                      onChange={(e) => set(f.key, e.target.value)}
+                    />
+                    {named.card && (
+                      <>
+                        <ChipFace card={named.card} className="chip-face--form" />
+                        <p className="field__resolved">{named.card.name}</p>
+                      </>
+                    )}
+                  </div>
+                  {named.card && (
+                    <p className="fineprint" style={{ textAlign: 'left', marginTop: 7 }}>
+                      {named.letters.length} letters, value {named.total}
+                      {named.wraps > 0 ? ` — wraps to ${named.value}` : ''}
+                    </p>
+                  )}
                 </div>
               );
             })}
