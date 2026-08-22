@@ -3026,6 +3026,234 @@ textarea.control {
 
 }
 
+.learn__reference {
+  display: block;
+  margin-top: 30px;
+  background: var(--panel);
+  border: 1px solid var(--line-panel);
+  border-radius: 8px;
+  padding: 22px;
+}
+
+.learn__reference:hover {
+  border-color: var(--blue-line);
+}
+
+.learn__reference-title {
+  display: block;
+  font-family: var(--display);
+  font-size: 25px;
+  line-height: 1.15;
+  margin-top: 8px;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.learn__reference-sub {
+  display: block;
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--blue);
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Reference tables
+   -------------------------------------------------------------------------- */
+
+/* Wide tables scroll inside their own box rather than pushing the page sideways. */
+.ref__scroll {
+  overflow-x: auto;
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.ref__table {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: 100%;
+}
+
+.ref__table th,
+.ref__table td {
+  padding: 6px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--line-faint);
+  white-space: nowrap;
+}
+
+.ref__table thead th {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-3);
+  font-weight: 400;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+}
+
+.ref__table tbody th {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  font-weight: 400;
+  text-align: right;
+  position: sticky;
+  left: 0;
+  background: var(--panel);
+}
+
+.ref__table tbody tr:last-child th,
+.ref__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ref__token {
+  font-family: var(--display);
+  font-size: 15px;
+  color: var(--suit);
+}
+
+.ref__token:hover {
+  text-decoration: underline;
+}
+
+.ref__none {
+  color: var(--line);
+}
+
+.ref__joker {
+  font-size: 13px;
+  color: var(--muted-2);
+}
+
+.ref__num {
+  color: var(--muted-3);
+}
+
+.ref__letter {
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--ink-body);
+}
+
+.ref__table--solar td {
+  padding: 5px 10px;
+}
+
+.ref__table--energy {
+  margin-top: 22px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.ref__table--energy th {
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  font-weight: 400;
+  padding: 11px 16px 11px 0;
+  border-bottom: 1px solid var(--line-faint);
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.ref__table--energy td {
+  font-family: var(--body);
+  font-size: 16px;
+  color: var(--ink-body);
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line-faint);
+  text-align: left;
+}
+
+.ref__notes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.ref__note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--display);
+  font-size: 16px;
+}
+
+.ref__note-body {
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--muted);
+  flex-basis: 100%;
+  line-height: 1.5;
+}
+
+/* -- taking a name apart -- */
+
+.spell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.spell__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+  padding: 8px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.spell__letter {
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--ink-body);
+}
+
+.spell__card {
+  font-family: var(--display);
+  font-size: 17px;
+  color: var(--suit);
+}
+
+.spell__value {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted-3);
+}
+
+.spell__total {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  max-width: 420px;
+}
+
+.spell__total-number {
+  font-family: var(--display);
+  font-size: 34px;
+  color: var(--ink);
+  margin-left: auto;
+}
+
 /* --------------------------------------------------------------------------
    Sign in
    -------------------------------------------------------------------------- */

@@ -157,6 +157,27 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 node scripts/smoke-stripe.mjs      # checkout + signature checks, no CLI needed
 ```
 
+## Reference tables
+
+`/reference` carries the three tables everything else is built on, generated
+from `cardreftab.md` rather than retyped — a slip in a 49-cell grid or a 52-row
+cipher is invisible by eye and wrong in every reading built on it.
+
+```bash
+npm run data:reference   # regenerate spread.json and solar.json from the markdown
+npm run data:verify      # check the shipped day-card data against the birthday chart
+```
+
+`data:verify` compares all 366 dates in the reference chart against
+`lib/data/day-card.json`; they currently agree exactly. The spread generator
+refuses to write unless all fifty-two cards appear exactly once (49 in the grid
+plus 3 Crown), and the solar table unless values run 1–52 with unique letters.
+
+**Known gap:** the letter cipher gives a value per letter and therefore a total
+per name, both of which the app shows. How that total *reduces* to a single card
+is not stated anywhere in the reference, so nothing here invents one — see
+`lib/reference.ts`.
+
 ## Database
 
 Supabase (`pljmjyeftdhjvcxppxdi`). Two tables, deliberately separate:

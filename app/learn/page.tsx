@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { LESSON_GROUPS, MODULES } from '@/lib/lessons';
 
 export const metadata: Metadata = {
@@ -36,6 +37,16 @@ export default function LearnPage() {
           </article>
         ))}
       </div>
+
+      <Link href="/reference" className="learn__reference">
+        <span className="label">The three tables</span>
+        <span className="learn__reference-title">
+          The birthday chart, the Grand Solar Spread, and the solar values
+        </span>
+        <span className="learn__reference-sub">
+          Everything else is built on these. Keep the tab open. →
+        </span>
+      </Link>
 
       <h2 className="label rule-under lessons__heading">All fifty lessons</h2>
 

@@ -5,6 +5,7 @@ import { CardFace } from '@/components/CardFace';
 import { SaveCardButton } from '@/components/SaveCardButton';
 import { CARDS, CARD_BY_CODE, studySections } from '@/lib/cards';
 import { birthdaysFor, cardSubtitle } from '@/lib/cardology';
+import { isCrown, planetaryPosition } from '@/lib/reference';
 
 /** All fifty-two studies are static — they never change and they are the pages
  *  worth having in a search index. */
@@ -35,8 +36,17 @@ export default async function CardStudyPage({ params }: { params: Promise<{ code
   const sections = studySections(card);
   const birthdays = birthdaysFor(card.name);
 
+  const position = planetaryPosition(card.code);
   const meta = [
     { label: 'Planet', value: card.planet || '—' },
+    {
+      label: 'Spread',
+      value: position
+        ? `${position.row} / ${position.column}`
+        : isCrown(card.code)
+          ? 'Crown'
+          : '—',
+    },
     { label: 'Intensity', value: card.intensity || '—' },
     { label: 'Volatility', value: card.volatility || '—' },
     { label: 'Birthdays', value: String(birthdays.length), count: true },
