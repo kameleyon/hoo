@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { supabaseConfig } from './config';
 
 /**
  * Supabase in the browser.
@@ -8,8 +9,7 @@ import { createBrowserClient } from '@supabase/ssr';
  * what the signed-in reader is already allowed to see.
  */
 export function supabaseBrowser() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-  );
+  const config = supabaseConfig();
+  if (!config) throw new Error('Supabase is not configured on this deployment');
+  return createBrowserClient(config.url, config.publishableKey);
 }

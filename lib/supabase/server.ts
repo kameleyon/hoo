@@ -1,6 +1,7 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import { supabaseConfig } from './config';
 
 /**
  * Supabase on the server, reading the session from cookies.
@@ -9,11 +10,14 @@ import { createServerClient } from '@supabase/ssr';
  * applies. For the Stripe webhook, which has no reader, use lib/supabase/admin.
  */
 export async function supabaseServer() {
+  const config = supabaseConfig();
+  if (!config) throw new Error('Supabase is not configured on this deployment');
+
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    config.url,
+    config.publishableKey,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
@@ -39,6 +43,7 @@ export async function supabaseServer() {
  * checking it, so it can be spoofed. getUser verifies with Supabase.
  */
 export async function currentUser() {
+  if (!supabaseConfig()) return null;
   const supabase = await supabaseServer();
   const { data, error } = await supabase.auth.getUser();
   return error ? null : data.user;

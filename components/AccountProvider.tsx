@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabaseBrowser } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { parseDayKey } from '@/lib/cardology';
 import { BY_CODE } from '@/lib/card-index';
 import type { DayKey } from '@/lib/types';
@@ -124,6 +125,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setBirthdayState(local.birthday);
     setSavedState(local.saved);
 
+    // No Supabase on this deployment: everything still works, it just stays on
+    // this device.
+    if (!isSupabaseConfigured()) {
+      setReady(true);
+      return;
+    }
+
     const supabase = supabaseBrowser();
 
     supabase.auth.getUser().then(async ({ data }) => {
@@ -150,7 +158,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     (nextBirthday: DayKey | null, nextSaved: string[]) => {
       localRef.current = { birthday: nextBirthday, saved: nextSaved };
       writeLocal(nextBirthday, nextSaved);
-      if (!user) return;
+      if (!user || !isSupabaseConfigured()) return;
       void supabaseBrowser()
         .from('profiles')
         .update({ birthday: nextBirthday, saved_cards: nextSaved })

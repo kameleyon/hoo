@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { supabaseConfig } from '@/lib/supabase/config';
 
 /**
  * Keeps the Supabase session alive.
@@ -14,9 +15,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Almost none of this app needs an account. If Supabase is not configured on
+  // this deployment, serve the site and leave signing in disabled — throwing
+  // here would 500 every page, including the static card studies.
+  const config = supabaseConfig();
+  if (!config) return response;
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    config.url,
+    config.publishableKey,
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
