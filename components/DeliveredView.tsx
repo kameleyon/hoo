@@ -1,43 +1,37 @@
-'use client';
-
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { getOrder, orderAssets } from '@/lib/orders';
-import type { Order } from '@/lib/orders';
+import type Stripe from 'stripe';
+import { orderAssets } from '@/lib/fulfilment';
 import { documentNames, reportById } from '@/lib/reports';
 
-export function DeliveredView({ orderId }: { orderId: string }) {
-  const [order, setOrder] = useState<Order | null | undefined>(undefined);
+/**
+ * The delivered document.
+ *
+ * A Checkout Session is the order record — it holds what was bought, what was
+ * answered, and whether it was paid for — so this reads back from Stripe and
+ * needs no database of its own.
+ */
+export function DeliveredView({ session }: { session: Stripe.Checkout.Session }) {
+  const report = reportById(session.metadata?.reportId ?? '');
 
-  useEffect(() => {
-    setOrder(getOrder(orderId) ?? null);
-  }, [orderId]);
-
-  if (order === undefined) {
-    return <main className="view" aria-busy="true" />;
-  }
-
-  if (order === null) {
+  if (!report) {
     return (
       <main className="view">
         <Link href="/reports" className="back">
           ← On demand
         </Link>
-        <h1 className="page-title">No such order</h1>
+        <h1 className="page-title">We cannot read this order</h1>
         <p className="page-lede">
-          This order was placed on another device, or the browser has since forgotten it.
+          It was paid for, but we no longer recognise the reading it was for. Get in touch and we
+          will sort it out.
         </p>
       </main>
     );
   }
 
-  const report = reportById(order.reportId);
-  if (!report) notFound();
-
-  const doc = documentNames(report);
-  const assets = orderAssets(order);
+  const paid = session.payment_status !== 'unpaid';
+  const assets = orderAssets(session);
   const delivered = Boolean(assets.pdfUrl || assets.audioUrl);
+  const doc = documentNames(report);
 
   return (
     <main className="view">
@@ -47,7 +41,9 @@ export function DeliveredView({ orderId }: { orderId: string }) {
 
       <div className="delivered">
         <div className="delivered__head">
-          <p className="label label--wide">{delivered ? 'Ready' : 'Ordered'}</p>
+          <p className="label label--wide">
+            {!paid ? 'Payment pending' : delivered ? 'Ready' : 'Ordered'}
+          </p>
           <h1 className="delivered__title">{report.title}</h1>
           <p className="delivered__specs">
             {report.pages} · {report.audio}
@@ -69,9 +65,9 @@ export function DeliveredView({ orderId }: { orderId: string }) {
                   Download
                 </a>
               ) : (
-                <button type="button" className="filerow__action" disabled>
-                  Preparing
-                </button>
+                <span className="filerow__action filerow__action--idle">
+                  {paid ? 'Writing' : 'Pending'}
+                </span>
               )}
             </div>
           </div>
@@ -81,18 +77,13 @@ export function DeliveredView({ orderId }: { orderId: string }) {
           <div className="delivered__file">
             <div className="filerow">
               {assets.audioUrl ? (
-                <button type="button" className="filerow__play" aria-label="Play the narration">
+                <a href={assets.audioUrl} className="filerow__play" aria-label="Play the narration">
                   ▶
-                </button>
+                </a>
               ) : (
-                <button
-                  type="button"
-                  className="filerow__play"
-                  disabled
-                  aria-label="Narration not ready yet"
-                >
+                <span className="filerow__play filerow__play--idle" aria-hidden="true">
                   ▶
-                </button>
+                </span>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="filerow__name">{doc.mp3Name}</p>
@@ -109,7 +100,9 @@ export function DeliveredView({ orderId }: { orderId: string }) {
 
         {!delivered && (
           <p className="fineprint" style={{ textAlign: 'left', marginTop: 16 }}>
-            {report.turn}. We will email both files to you as soon as the reading is written.
+            {paid
+              ? `${report.turn}. Both files are emailed to ${session.customer_details?.email ?? 'you'} the moment the reading is written.`
+              : 'Your payment method takes a little while to settle. Nothing is written until it clears — we will email you either way.'}
           </p>
         )}
 
@@ -122,14 +115,12 @@ export function DeliveredView({ orderId }: { orderId: string }) {
           <Link href="/reports" className="btn-secondary">
             Order another
           </Link>
-          {delivered ? (
+          {assets.pdfUrl ? (
             <a href={`mailto:?subject=${encodeURIComponent(report.title)}`} className="btn-dark">
               Email a copy
             </a>
           ) : (
-            <button type="button" className="btn-dark" disabled>
-              Email a copy
-            </button>
+            <span className="btn-dark btn-dark--idle">Email a copy</span>
           )}
         </div>
       </div>

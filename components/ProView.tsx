@@ -9,6 +9,27 @@ import { FULL_STUDY, PLANS, PRO_ROWS } from '@/lib/reports';
 export function ProView() {
   const router = useRouter();
   const [plan, setPlan] = useState('year');
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const startTrial = async () => {
+    if (starting) return;
+    setStarting(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'pro', plan }),
+      });
+      const data: { url?: string; error?: string } = await response.json();
+      if (!response.ok || !data.url) throw new Error(data.error ?? 'checkout unavailable');
+      window.location.assign(data.url);
+    } catch {
+      setError('We could not open checkout. Nothing has been charged — please try again.');
+      setStarting(false);
+    }
+  };
 
   const plans = (
     <div className="pro__plans" role="group" aria-label="Choose a plan">
@@ -79,10 +100,16 @@ export function ProView() {
           </p>
           {plans}
 
-          <button type="button" className="btn-invert">
-            Start 7 days free
+          <button type="button" className="btn-invert" onClick={startTrial} disabled={starting}>
+            {starting ? 'Opening checkout' : 'Start 7 days free'}
           </button>
-          <p className="pro__fine">Cancel any time. Restore purchase.</p>
+          {error ? (
+            <p className="pro__fine pro__fine--error" role="alert">
+              {error}
+            </p>
+          ) : (
+            <p className="pro__fine">Cancel any time. Restore purchase.</p>
+          )}
 
           <div className="pro__oneoff">
             <p className="label" style={{ color: 'var(--on-dark-label)' }}>

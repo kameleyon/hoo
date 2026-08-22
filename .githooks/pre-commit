@@ -1,0 +1,27 @@
+#!/bin/sh
+# Refuses a commit that carries a credential. This repository is public.
+#
+# Enabled with:  git config core.hooksPath .githooks
+# Bypass (rarely correct):  git commit --no-verify
+
+set -e
+
+# The hook itself is excluded: it contains the very patterns it looks for.
+staged=$(git diff --cached --name-only --diff-filter=ACM | grep -v '^\.githooks/' || true)
+[ -z "$staged" ] && exit 0
+
+# Stripe live and test keys, webhook signing secrets, OpenRouter keys.
+pattern='(sk|rk)_(live|test)_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}|sk-or-v1-[a-f0-9]{32,}'
+
+hits=$(git diff --cached -U0 -- $staged | grep -E "^\+" | grep -En "$pattern" || true)
+
+if [ -n "$hits" ]; then
+  echo "pre-commit: a credential is staged. Commit refused." >&2
+  echo >&2
+  echo "$hits" | sed -E 's/((sk|rk)_(live|test)_|whsec_|sk-or-v1-)[A-Za-z0-9-]*/\1.../g' >&2
+  echo >&2
+  echo "Move it to .env.local (git-ignored) or your platform's secrets store." >&2
+  exit 1
+fi
+
+exit 0

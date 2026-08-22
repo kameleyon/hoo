@@ -11,9 +11,17 @@ Imported from the Claude Design canvas **HausofOracle cardology app design**
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+cp .env.example .env.local   # then fill it in
+npm run dev                  # http://localhost:3000
 npm run build
 npm run typecheck
+```
+
+Secrets live in `.env.local`, which is git-ignored. Enable the secret-scanning
+hook once per clone — this repository is public:
+
+```bash
+git config core.hooksPath .githooks
 ```
 
 ## How the design maps onto the app
@@ -65,7 +73,8 @@ lib/
   cards.ts           full card studies, server-only
   reports.ts         the seven report definitions
   lessons.ts         five modules, fifty lessons
-  orders.ts          order records and the fulfilment boundary
+  stripe.ts          server Stripe client, prices, dashboard labels
+  fulfilment.ts      what happens after the money moves
   data/*.json        generated — see scripts/build-card-data.mjs
 scripts/             data generation
 ```
@@ -97,15 +106,65 @@ be saved from any study and are listed at `/you/saved`.
 `div`s. Nothing about the look changed; keyboard and screen-reader users get an
 app that works.
 
+## Payments
+
+Stripe Checkout, hosted. Two flows:
+
+| Flow | Mode | Where |
+| --- | --- | --- |
+| A written reading ($15–$89) | `payment` | `/reports/[id]` -> `POST /api/checkout` |
+| Haus of Oracle Pro, 7-day trial | `subscription` | `/pro` -> `POST /api/checkout` |
+
+Amounts are read from `lib/reports.ts` **on the server** — the browser sends
+only the report id and the answers, never a price. Report prices are inline
+`price_data`, so no product catalogue setup is needed; Pro needs two recurring
+Prices, whose ids go in `STRIPE_PRICE_PRO_MONTHLY` and `STRIPE_PRICE_PRO_YEARLY`.
+
+**A Checkout Session is the order record.** The reader's answers ride along as
+session metadata and `/orders/[id]` reads them back out of Stripe, so orders
+need no database. `payment_status` on that session is the single source of truth
+for whether it was paid.
+
+### Webhook
+
+Destination: `POST /api/stripe/webhook`. Events:
+
+| Event | Why |
+| --- | --- |
+| `checkout.session.completed` | fulfil, once `payment_status` is not `unpaid` |
+| `checkout.session.async_payment_succeeded` | delayed methods settle hours later |
+| `checkout.session.async_payment_failed` | the money never arrived |
+| `customer.subscription.created` / `.updated` / `.deleted` | Pro access |
+| `invoice.paid` / `invoice.payment_failed` | renewals and dunning |
+
+Fulfilment runs here, not on the success page: a reader can pay and lose their
+connection before the redirect lands, and delayed payment methods finish with no
+browser involved at all. Signatures are verified before anything is read, a
+forged or missing signature gets a `400` so Stripe stops retrying, and a handler
+that throws gets a `500` so Stripe retries with backoff — which means handlers
+must be safe to run twice.
+
+Locally, without deploying:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+node scripts/smoke-stripe.mjs      # checkout + signature checks, no CLI needed
+```
+
 ## Not connected yet
 
-- **Payment.** "Generate report" records the order and takes you to it. No money
-  moves. Wire a provider into `BuilderView.generate`.
 - **Fulfilment.** The PDF and the narration are the actual product and need a
-  server that writes and renders them. `orderAssets()` in `lib/orders.ts` is the
-  seam: it returns no URLs today, and the delivered view says *Ordered* rather
-  than *Ready*, with Download, Play and Email disabled. Return real URLs there
-  and the whole screen lights up as designed.
+  server that writes and renders them. `lib/fulfilment.ts` is the seam:
+  `fulfilReport()` is called with a paid session and currently only logs, and
+  `orderAssets()` returns no URLs — so the delivered view reads *Ordered*, with
+  Download, Play and Email visibly inert rather than offering a file that would
+  404. It needs a blob store for the output and a job runner for the writing.
+- **Pro entitlement.** `setProEntitlement()` has nowhere to write. The app is
+  anonymous — there is no account for a subscription to attach to — so accounts
+  come before Pro can gate anything.
+- **Tax.** `automatic_tax` is off. Turning it on without an active registration
+  in the customer's jurisdiction collects nothing while appearing to work; see
+  [Collect taxes](https://docs.stripe.com/billing/taxes/collect-taxes.md).
 - **Daily notification.** Listed on `/you` as unavailable rather than shown "On".
 - **Lesson content.** The fifty lesson titles and durations are real; the
   lessons themselves are not written, so rows are not yet links.

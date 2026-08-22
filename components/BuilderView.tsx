@@ -1,13 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ChipFace } from './CardFace';
 import { MonthDaySelect } from './MonthDaySelect';
 import { useProfile } from './ProfileProvider';
 import { cardForKey } from '@/lib/cardology';
-import { createOrder } from '@/lib/orders';
 import { FIELD_PLACEHOLDER } from '@/lib/reports';
 import type { ReportDefinition } from '@/lib/reports';
 import type { DayKey } from '@/lib/types';
@@ -21,10 +19,10 @@ const SEED_DATES: Record<string, DayKey> = {
 };
 
 export function BuilderView({ report }: { report: ReportDefinition }) {
-  const router = useRouter();
   const { birthday } = useProfile();
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // "Your birthday" starts from the saved one when there is one.
   const valueFor = (key: string, kind: string): string => {
@@ -37,14 +35,33 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
   const set = (key: string, value: string) =>
     setOverrides((prev) => ({ ...prev, [key]: value }));
 
-  const generate = () => {
+  /**
+   * Hands off to Stripe Checkout. The price is never sent from here — the
+   * server reads it from the report definition — and the answers travel as
+   * session metadata, which is what /orders/[id] reads back afterwards.
+   */
+  const generate = async () => {
     if (submitting) return;
     setSubmitting(true);
+    setError(null);
+
     const values = Object.fromEntries(
       report.fields.map((f) => [f.key, valueFor(f.key, f.kind)]),
     );
-    const order = createOrder(report.id, values);
-    router.push(`/orders/${order.id}`);
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'report', reportId: report.id, values }),
+      });
+      const data: { url?: string; error?: string } = await response.json();
+      if (!response.ok || !data.url) throw new Error(data.error ?? 'checkout unavailable');
+      window.location.assign(data.url);
+    } catch {
+      setError('We could not open checkout. Nothing has been charged — please try again.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -92,6 +109,7 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
                       id={`f-${f.key}`}
                       className="control"
                       rows={4}
+                      maxLength={500}
                       placeholder={FIELD_PLACEHOLDER[f.key]}
                       value={value}
                       onChange={(e) => set(f.key, e.target.value)}
@@ -135,10 +153,16 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
           </div>
 
           <button type="button" className="btn-primary" onClick={generate} disabled={submitting}>
-            <span>Generate report</span>
+            <span>{submitting ? 'Opening checkout' : 'Generate report'}</span>
             <span className="btn-primary__price">{report.price}</span>
           </button>
-          <p className="fineprint">Charged once. No subscription.</p>
+          {error ? (
+            <p className="fineprint fineprint--error" role="alert">
+              {error}
+            </p>
+          ) : (
+            <p className="fineprint">Charged once. No subscription.</p>
+          )}
         </aside>
       </div>
     </main>

@@ -31,6 +31,7 @@
   --blue: #1b4079;
   --blue-line: #c8ceda;
   --red: #a4303f;
+  --red-on-dark: #d98a94;
   --silver: #edf1f7;
 
   /* On dark */
@@ -2103,6 +2104,20 @@ textarea.control {
   line-height: 1.6;
 }
 
+.fineprint--error {
+  color: var(--red);
+}
+
+.pro__fine--error {
+  color: var(--red-on-dark);
+}
+
+.btn-primary[disabled],
+.btn-invert[disabled] {
+  opacity: 0.7;
+  cursor: progress;
+}
+
 .builder__summary {
   padding-top: 6px;
 }
@@ -2270,16 +2285,15 @@ textarea.control {
   flex: none;
 }
 
-.filerow__action[disabled] {
+/* Nothing to download yet — the control is present but plainly inert. */
+.filerow__action--idle {
   color: var(--muted-3);
   border-color: var(--line);
-  cursor: not-allowed;
 }
 
-.filerow__play[disabled] {
+.filerow__play--idle {
   background: var(--line);
   color: var(--muted-3);
-  cursor: not-allowed;
 }
 
 .delivered__divider {
@@ -2311,10 +2325,9 @@ textarea.control {
   text-transform: uppercase;
 }
 
-.btn-dark[disabled] {
+.btn-dark--idle {
   background: var(--line);
   color: var(--muted-3);
-  cursor: not-allowed;
 }
 
 @media (min-width: 1024px) {
