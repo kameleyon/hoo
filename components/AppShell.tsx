@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CardFace } from './CardFace';
 import { useDeckFilter } from './DeckFilterProvider';
-import { useProfile } from './ProfileProvider';
+import { useAccount } from './AccountProvider';
 import { useNow } from './useNow';
 import { cardForKey, todayLabel } from '@/lib/cardology';
 
@@ -27,7 +27,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const now = useNow();
-  const { birthday } = useProfile();
+  const { birthday } = useAccount();
   const { q, setQ } = useDeckFilter();
 
   const birthCard = birthday ? cardForKey(birthday) : null;

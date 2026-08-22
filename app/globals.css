@@ -3027,6 +3027,40 @@ textarea.control {
 }
 
 /* --------------------------------------------------------------------------
+   Sign in
+   -------------------------------------------------------------------------- */
+
+.auth .page-lede {
+  max-width: 560px;
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 26px;
+  max-width: 420px;
+}
+
+.auth__form .field__label {
+  margin-bottom: 0;
+}
+
+.auth__form .btn-primary {
+  margin-top: 8px;
+}
+
+.auth .fineprint {
+  text-align: left;
+  max-width: 420px;
+}
+
+.you__signout {
+  margin-top: 26px;
+  max-width: 220px;
+}
+
+/* --------------------------------------------------------------------------
    Shared bits
    -------------------------------------------------------------------------- */
 

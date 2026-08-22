@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { CardFace } from './CardFace';
 import { MonthDaySelect } from './MonthDaySelect';
-import { useProfile } from './ProfileProvider';
+import { useAccount } from './AccountProvider';
 import { cardForKey, cardSubtitle, firstSentence } from '@/lib/cardology';
 
 /**
@@ -14,7 +14,7 @@ import { cardForKey, cardSubtitle, firstSentence } from '@/lib/cardology';
  * its own way, which is also what makes "against your card" mean anything.
  */
 export function LookupView() {
-  const { birthday } = useProfile();
+  const { birthday } = useAccount();
   const [value, setValue] = useState<string | null>(null);
 
   const key = value ?? birthday ?? '07-12';

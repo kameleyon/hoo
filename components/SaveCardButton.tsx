@@ -1,11 +1,11 @@
 'use client';
 
-import { useSaved } from './SavedProvider';
+import { useAccount } from './AccountProvider';
 
 /** Keeps a card on the You screen. Renders nothing until storage has been read,
  *  so the label never flickers from "Save" to "Saved". */
 export function SaveCardButton({ code, name }: { code: string; name: string }) {
-  const { isSaved, toggle, ready } = useSaved();
+  const { isSaved, toggleSaved, ready } = useAccount();
   const saved = isSaved(code);
 
   return (
@@ -13,7 +13,7 @@ export function SaveCardButton({ code, name }: { code: string; name: string }) {
       type="button"
       className="save-pill"
       aria-pressed={ready ? saved : undefined}
-      onClick={() => toggle(code)}
+      onClick={() => toggleSaved(code)}
     >
       {!ready ? 'Save' : saved ? 'Saved' : 'Save'}
       <span className="visually-hidden"> {name}</span>

@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { CardFace } from './CardFace';
-import { useSaved } from './SavedProvider';
+import { useAccount } from './AccountProvider';
 import { BY_CODE } from '@/lib/card-index';
 import { birthdayCountLabel } from '@/lib/cardology';
 
 export function SavedView() {
-  const { saved, ready } = useSaved();
+  const { saved, ready } = useAccount();
   const cards = saved.map((code) => BY_CODE[code]).filter(Boolean);
 
   return (

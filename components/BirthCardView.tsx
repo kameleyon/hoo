@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useProfile } from './ProfileProvider';
+import { useAccount } from './AccountProvider';
 import { cardForKey, cardSubtitle, formatDayKey } from '@/lib/cardology';
 
 export function BirthCardView() {
-  const { birthday, ready } = useProfile();
+  const { birthday, ready } = useAccount();
 
   if (!ready) return <main className="view" aria-busy="true" />;
 

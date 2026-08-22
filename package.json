@@ -12,7 +12,9 @@
     "stripe:setup": "node --env-file=.env.local scripts/setup-stripe-prices.mjs",
     "stripe:smoke": "node scripts/smoke-stripe.mjs",
     "supabase:smoke": "node --env-file=.env.local scripts/smoke-supabase.mjs",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "auth:smoke": "node --env-file=.env.local scripts/smoke-auth.mjs",
+    "config:push": "supabase config push"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

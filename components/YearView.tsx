@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useProfile } from './ProfileProvider';
+import { useAccount } from './AccountProvider';
 import { useNow } from './useNow';
 import { planetaryPeriods } from '@/lib/cardology';
 
 export function YearView() {
-  const { birthday, ready } = useProfile();
+  const { birthday, ready } = useAccount();
   const now = useNow();
 
   const periods = birthday && now ? planetaryPeriods(birthday, now) : [];

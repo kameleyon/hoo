@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ChipFace } from './CardFace';
 import { MonthDaySelect } from './MonthDaySelect';
-import { useProfile } from './ProfileProvider';
+import { useAccount } from './AccountProvider';
 import { cardForKey } from '@/lib/cardology';
 import { FIELD_PLACEHOLDER } from '@/lib/reports';
 import type { ReportDefinition } from '@/lib/reports';
@@ -19,7 +19,7 @@ const SEED_DATES: Record<string, DayKey> = {
 };
 
 export function BuilderView({ report }: { report: ReportDefinition }) {
-  const { birthday } = useProfile();
+  const { birthday } = useAccount();
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

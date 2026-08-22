@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { MobileHeader } from './AppShell';
 import { CardFace } from './CardFace';
-import { useProfile } from './ProfileProvider';
+import { useAccount } from './AccountProvider';
 import { useNow } from './useNow';
 import { WeekList } from './WeekList';
 import { cardForDate, cardForKey, cardSubtitle, currentPeriod, todayLabel } from '@/lib/cardology';
@@ -16,7 +16,7 @@ import { CONTINUE_LESSON } from '@/lib/lessons';
  */
 export function TodayView({ serverNow }: { serverNow: string }) {
   const now = useNow(serverNow) ?? new Date(serverNow);
-  const { birthday, ready } = useProfile();
+  const { birthday, ready } = useAccount();
 
   const card = cardForDate(now);
   const birthCard = birthday ? cardForKey(birthday) : null;

@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Instrument_Serif, Newsreader } from 'next/font/google';
 import { AppShell } from '@/components/AppShell';
 import { DeckFilterProvider } from '@/components/DeckFilterProvider';
-import { ProfileProvider } from '@/components/ProfileProvider';
-import { SavedProvider } from '@/components/SavedProvider';
+import { AccountProvider } from '@/components/AccountProvider';
 import './globals.css';
 
 const display = Instrument_Serif({
@@ -45,13 +44,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
-        <ProfileProvider>
-          <SavedProvider>
-            <DeckFilterProvider>
-              <AppShell>{children}</AppShell>
-            </DeckFilterProvider>
-          </SavedProvider>
-        </ProfileProvider>
+        <AccountProvider>
+          <DeckFilterProvider>
+            <AppShell>{children}</AppShell>
+          </DeckFilterProvider>
+        </AccountProvider>
       </body>
     </html>
   );

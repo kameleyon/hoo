@@ -5,13 +5,11 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { CardFace } from './CardFace';
 import { MonthDaySelect } from './MonthDaySelect';
-import { useProfile } from './ProfileProvider';
-import { useSaved } from './SavedProvider';
+import { useAccount } from './AccountProvider';
 import { cardForKey, cardSubtitle, formatDayKey } from '@/lib/cardology';
 
 export function YouView() {
-  const { birthday, setBirthday, ready } = useProfile();
-  const { saved } = useSaved();
+  const { birthday, setBirthday, ready, saved, user, isPro } = useAccount();
   const [draft, setDraft] = useState('07-12');
 
   const card = birthday ? cardForKey(birthday) : null;
@@ -60,9 +58,16 @@ export function YouView() {
     },
     {
       title: 'Haus of Oracle Pro',
-      sub: 'Not subscribed',
+      sub: isPro ? 'Subscribed' : 'Not subscribed',
       href: '/pro',
-      tag: '→',
+      tag: isPro ? 'On' : '→',
+      tagClass: isPro ? ' you__row-tag--plain' : '',
+    },
+    {
+      title: user ? 'Signed in' : 'Sign in',
+      sub: user?.email ?? 'Keep your birthday and saved cards across devices',
+      href: user ? null : '/sign-in',
+      tag: user ? '' : '→',
       tagClass: '',
     },
   ];
@@ -143,6 +148,14 @@ export function YouView() {
           ),
         )}
       </div>
+
+      {user && (
+        <form action="/auth/sign-out" method="post" className="you__signout">
+          <button type="submit" className="btn-secondary">
+            Sign out
+          </button>
+        </form>
+      )}
 
       <p className="you__colophon">
         Haus of Oracle · hausoforacle.com

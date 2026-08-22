@@ -10,6 +10,7 @@ import {
 import type { ProPlan } from '@/lib/stripe';
 import { parseDayKey } from '@/lib/cardology';
 import { TRIAL_DAYS, reportById } from '@/lib/reports';
+import { currentUser } from '@/lib/supabase/server';
 
 /** Stripe caps metadata values at 500 characters. */
 const METADATA_MAX = 500;
@@ -97,13 +98,27 @@ export async function POST(request: Request) {
     }
 
     if (payload.kind === 'pro') {
+      // A subscription is a relationship over time, so it needs someone to
+      // belong to. One-off reports deliberately do not.
+      const user = await currentUser();
+      if (!user) {
+        return NextResponse.json({ error: 'sign-in required', signIn: true }, { status: 401 });
+      }
+
       const plan: ProPlan = payload.plan === 'month' ? 'month' : 'year';
 
       const session = await stripe().checkout.sessions.create({
         mode: 'subscription',
         integration_identifier: INTEGRATION_ID.pro,
         line_items: [{ price: await proPriceId(plan), quantity: 1 }],
-        subscription_data: { trial_period_days: TRIAL_DAYS },
+        // Carried on the session and on every subscription event it spawns, so
+        // the webhook can resolve the reader whatever order events arrive in.
+        client_reference_id: user.id,
+        customer_email: user.email,
+        subscription_data: {
+          trial_period_days: TRIAL_DAYS,
+          metadata: { user_id: user.id },
+        },
         success_url: `${origin}/you`,
         cancel_url: `${origin}/pro`,
       });

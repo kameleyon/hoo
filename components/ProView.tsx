@@ -22,7 +22,11 @@ export function ProView() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ kind: 'pro', plan }),
       });
-      const data: { url?: string; error?: string } = await response.json();
+      const data: { url?: string; error?: string; signIn?: boolean } = await response.json();
+      if (data.signIn) {
+        window.location.assign('/sign-in?next=/pro');
+        return;
+      }
       if (!response.ok || !data.url) throw new Error(data.error ?? 'checkout unavailable');
       window.location.assign(data.url);
     } catch {

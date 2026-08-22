@@ -1,6 +1,12 @@
 import type Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
-import { markPaymentFailed, fulfilReport, setProEntitlement } from '@/lib/fulfilment';
+import {
+  entitlementFromInvoice,
+  entitlementFromSession,
+  entitlementFromSubscription,
+  fulfilReport,
+  markPaymentFailed,
+} from '@/lib/fulfilment';
 
 /**
  * Stripe's event endpoint.
@@ -60,7 +66,7 @@ async function handle(event: Stripe.Event): Promise<void> {
       if (session.payment_status === 'unpaid') return;
 
       if (session.mode === 'subscription') {
-        await setProEntitlement(session, 'active');
+        await entitlementFromSession(session);
         return;
       }
       await fulfilReport(session, event.id);
@@ -76,20 +82,16 @@ async function handle(event: Stripe.Event): Promise<void> {
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
-      const subscription = event.data.object;
-      await setProEntitlement(
-        subscription,
-        subscription.status === 'active' || subscription.status === 'trialing'
-          ? 'active'
-          : 'inactive',
-      );
+      await entitlementFromSubscription(event.data.object);
       return;
     }
 
     case 'invoice.paid':
     case 'invoice.payment_failed': {
-      const invoice = event.data.object;
-      await setProEntitlement(invoice, event.type === 'invoice.paid' ? 'active' : 'past_due');
+      await entitlementFromInvoice(
+        event.data.object,
+        event.type === 'invoice.paid' ? 'active' : 'past_due',
+      );
       return;
     }
 
