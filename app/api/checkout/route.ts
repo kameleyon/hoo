@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { INTEGRATION_ID, priceToMinorUnits, stripe } from '@/lib/stripe';
+import { INTEGRATION_ID, StripeNotConfigured, priceToMinorUnits, stripe } from '@/lib/stripe';
 import { parseDayKey } from '@/lib/cardology';
 import { reportById } from '@/lib/reports';
 
@@ -117,6 +117,13 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof InvalidRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if (error instanceof StripeNotConfigured) {
+      console.error(error.message);
+      return NextResponse.json(
+        { error: 'payments are not configured on this deployment' },
+        { status: 503 },
+      );
     }
     // Never let a Stripe error message reach the browser — it can name the key.
     console.error('checkout failed', error);

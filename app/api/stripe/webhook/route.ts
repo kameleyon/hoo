@@ -15,8 +15,10 @@ import { markPaymentFailed, fulfilReport, setProEntitlement } from '@/lib/fulfil
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) {
+    // 503, so a retry succeeds once the variable is set, and so this is
+    // distinguishable from a handler that threw.
     console.error('STRIPE_WEBHOOK_SECRET is not set');
-    return new Response('not configured', { status: 500 });
+    return new Response('webhook signing secret is not configured', { status: 503 });
   }
 
   const signature = request.headers.get('stripe-signature');

@@ -50,7 +50,7 @@ const post = (path, body, headers = {}) =>
   check(
     'checkout creates a session',
     res.ok && typeof data.url === 'string' && data.url.includes('checkout.stripe.com'),
-    res.ok ? '' : JSON.stringify(data),
+    res.status === 503 ? 'STRIPE_SECRET_KEY missing on this deployment' : res.ok ? '' : JSON.stringify(data),
   );
 }
 
@@ -95,7 +95,11 @@ if (!secret) {
   const good = await post('/api/stripe/webhook', payload, {
     'stripe-signature': `t=${timestamp},v1=${signature}`,
   });
-  check('webhook accepts a correctly signed event', good.status === 204, `HTTP ${good.status}`);
+  check(
+    'webhook accepts a correctly signed event',
+    good.status === 204,
+    good.status === 503 ? 'STRIPE_WEBHOOK_SECRET missing on this deployment' : `HTTP ${good.status}`,
+  );
 
   const forged = await post('/api/stripe/webhook', payload, {
     'stripe-signature': `t=${timestamp},v1=${'0'.repeat(64)}`,

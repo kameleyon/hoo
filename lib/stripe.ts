@@ -8,6 +8,8 @@ import Stripe from 'stripe';
  * a missing key fails on the request that needed it rather than at build.
  * On Vercel, STRIPE_SECRET_KEY should be a sensitive environment variable.
  */
+export class StripeNotConfigured extends Error {}
+
 let client: Stripe | null = null;
 
 export function stripe(): Stripe {
@@ -15,7 +17,7 @@ export function stripe(): Stripe {
 
   const secret = process.env.STRIPE_SECRET_KEY;
   if (!secret) {
-    throw new Error('STRIPE_SECRET_KEY is not set');
+    throw new StripeNotConfigured('STRIPE_SECRET_KEY is not set');
   }
 
   client = new Stripe(secret, {
