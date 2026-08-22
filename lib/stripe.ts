@@ -37,6 +37,45 @@ export const INTEGRATION_ID = {
   pro: 'hoo-pro-bdwhnfgs',
 } as const;
 
+export class ProPricesMissing extends Error {}
+
+/**
+ * Stripe lookup keys for the two Pro prices. Resolving by lookup key rather
+ * than a pasted price id means the catalogue is set up once with
+ * `npm run stripe:setup` and there is no id to copy into an environment
+ * variable, and nothing to get wrong per deployment.
+ */
+export const PRO_LOOKUP_KEYS = {
+  month: 'hoo_pro_monthly',
+  year: 'hoo_pro_yearly',
+} as const;
+
+export type ProPlan = keyof typeof PRO_LOOKUP_KEYS;
+
+const priceCache = new Map<string, string>();
+
+export async function proPriceId(plan: ProPlan): Promise<string> {
+  const lookupKey = PRO_LOOKUP_KEYS[plan];
+  const cached = priceCache.get(lookupKey);
+  if (cached) return cached;
+
+  const { data } = await stripe().prices.list({
+    lookup_keys: [lookupKey],
+    active: true,
+    limit: 1,
+  });
+
+  const price = data[0];
+  if (!price) {
+    throw new ProPricesMissing(
+      `no active price with lookup_key "${lookupKey}" — run: npm run stripe:setup`,
+    );
+  }
+
+  priceCache.set(lookupKey, price.id);
+  return price.id;
+}
+
 /** "$19" -> 1900. Report prices live in lib/reports.ts as display strings. */
 export function priceToMinorUnits(price: string): number {
   const amount = Number(price.replace(/[^0-9.]/g, ''));

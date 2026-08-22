@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FULL_STUDY, PLANS, PRO_ROWS } from '@/lib/reports';
+import { FULL_STUDY, PLANS, PRO_ROWS, TRIAL_DAYS } from '@/lib/reports';
 
 export function ProView() {
   const router = useRouter();
@@ -101,7 +101,7 @@ export function ProView() {
           {plans}
 
           <button type="button" className="btn-invert" onClick={startTrial} disabled={starting}>
-            {starting ? 'Opening checkout' : 'Start 7 days free'}
+            {starting ? 'Opening checkout' : `Start ${TRIAL_DAYS} days free`}
           </button>
           {error ? (
             <p className="pro__fine pro__fine--error" role="alert">

@@ -69,6 +69,16 @@ const post = (path, body, headers = {}) =>
   check('checkout rejects an unknown report with 400', res.status === 400);
 }
 
+{
+  const res = await post('/api/checkout', { kind: 'pro', plan: 'year' });
+  const data = await res.json();
+  check(
+    'pro subscription checkout opens',
+    res.ok && typeof data.url === 'string' && data.url.includes('checkout.stripe.com'),
+    res.status === 503 ? 'run: npm run stripe:setup' : res.ok ? '' : JSON.stringify(data),
+  );
+}
+
 // --- webhook --------------------------------------------------------------
 const secret = env.STRIPE_WEBHOOK_SECRET;
 if (!secret) {

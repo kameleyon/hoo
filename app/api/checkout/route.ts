@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
-import { INTEGRATION_ID, StripeNotConfigured, priceToMinorUnits, stripe } from '@/lib/stripe';
+import {
+  INTEGRATION_ID,
+  ProPricesMissing,
+  StripeNotConfigured,
+  priceToMinorUnits,
+  proPriceId,
+  stripe,
+} from '@/lib/stripe';
+import type { ProPlan } from '@/lib/stripe';
 import { parseDayKey } from '@/lib/cardology';
-import { reportById } from '@/lib/reports';
+import { TRIAL_DAYS, reportById } from '@/lib/reports';
 
 /** Stripe caps metadata values at 500 characters. */
 const METADATA_MAX = 500;
@@ -89,23 +97,13 @@ export async function POST(request: Request) {
     }
 
     if (payload.kind === 'pro') {
-      const price =
-        payload.plan === 'month'
-          ? process.env.STRIPE_PRICE_PRO_MONTHLY
-          : process.env.STRIPE_PRICE_PRO_YEARLY;
-
-      if (!price) {
-        return NextResponse.json(
-          { error: 'Pro prices are not configured on this deployment.' },
-          { status: 503 },
-        );
-      }
+      const plan: ProPlan = payload.plan === 'month' ? 'month' : 'year';
 
       const session = await stripe().checkout.sessions.create({
         mode: 'subscription',
         integration_identifier: INTEGRATION_ID.pro,
-        line_items: [{ price, quantity: 1 }],
-        subscription_data: { trial_period_days: 7 },
+        line_items: [{ price: await proPriceId(plan), quantity: 1 }],
+        subscription_data: { trial_period_days: TRIAL_DAYS },
         success_url: `${origin}/you`,
         cancel_url: `${origin}/pro`,
       });
@@ -117,6 +115,13 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof InvalidRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if (error instanceof ProPricesMissing) {
+      console.error(error.message);
+      return NextResponse.json(
+        { error: 'Pro is not on sale on this deployment yet.' },
+        { status: 503 },
+      );
     }
     if (error instanceof StripeNotConfigured) {
       console.error(error.message);

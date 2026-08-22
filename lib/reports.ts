@@ -162,6 +162,10 @@ export const PRO_ROWS = [
   { sym: '♣', title: 'The complete learning path', sub: 'Fifty lessons across five modules.' },
 ];
 
+/** Free trial on Pro, in days. Drives both the button copy and the Stripe
+ *  subscription, so the two cannot drift apart. */
+export const TRIAL_DAYS = 3;
+
 export const PLANS = [
   { key: 'month', title: 'Monthly', sub: 'Billed every month', price: '$6.99' },
   { key: 'year', title: 'Yearly', sub: 'Two months free', price: '$49' },
