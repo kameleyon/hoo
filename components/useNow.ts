@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from 'react';
 
+const sameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
 /**
  * The clock, resolved in the reader's own timezone.
  *
@@ -10,26 +15,53 @@ import { useEffect, useState } from 'react';
  * matches, then the effect corrects it to the browser's local date. Screens
  * where a one-frame delay is invisible pass nothing and get `null` until mount.
  *
- * Re-ticks just after local midnight so a tab left open overnight rolls over.
+ * Rollover is belt and braces. A timer fires just after local midnight, and the
+ * date is re-checked whenever the tab is shown or focused — because background
+ * timers get throttled, and a laptop asleep at midnight wakes with a timer that
+ * is already late. State is only replaced when the *day* actually changed, so
+ * focusing the tab does not re-render the page.
  */
 export function useNow(seed?: string): Date | null {
   const [now, setNow] = useState<Date | null>(() => (seed ? new Date(seed) : null));
 
   useEffect(() => {
+    // Correct the server's date to the reader's timezone.
     setNow(new Date());
 
     let timer: ReturnType<typeof setTimeout>;
-    const scheduleRollover = () => {
+
+    const rollOverIfNewDay = () => {
+      setNow((previous) => {
+        const current = new Date();
+        return previous && sameDay(previous, current) ? previous : current;
+      });
+    };
+
+    const scheduleMidnight = () => {
       const d = new Date();
       const midnight = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 5);
       timer = setTimeout(() => {
-        setNow(new Date());
-        scheduleRollover();
+        rollOverIfNewDay();
+        scheduleMidnight();
       }, midnight.getTime() - d.getTime());
     };
-    scheduleRollover();
 
-    return () => clearTimeout(timer);
+    const recheck = () => {
+      if (document.visibilityState !== 'visible') return;
+      rollOverIfNewDay();
+      clearTimeout(timer);
+      scheduleMidnight();
+    };
+
+    scheduleMidnight();
+    document.addEventListener('visibilitychange', recheck);
+    window.addEventListener('focus', recheck);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', recheck);
+      window.removeEventListener('focus', recheck);
+    };
   }, []);
 
   return now;
