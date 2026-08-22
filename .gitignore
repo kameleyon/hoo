@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+.env*.local
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+.playwright-mcp
+
+# The working copy of the Claude Design project. Only the card database is kept,
+# because scripts/build-card-data.mjs regenerates lib/data/*.json from it.
+.design-src/*
+!.design-src/cardData.js
