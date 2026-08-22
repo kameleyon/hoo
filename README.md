@@ -117,8 +117,14 @@ Stripe Checkout, hosted. Two flows:
 
 Amounts are read from `lib/reports.ts` **on the server** — the browser sends
 only the report id and the answers, never a price. Report prices are inline
-`price_data`, so no product catalogue setup is needed; Pro needs two recurring
-Prices, whose ids go in `STRIPE_PRICE_PRO_MONTHLY` and `STRIPE_PRICE_PRO_YEARLY`.
+`price_data`, so they need no catalogue setup at all.
+
+Pro needs real recurring Prices. Create them once per Stripe account with
+`npm run stripe:setup`, which is safe to re-run; the app then resolves them by
+**lookup key** (`hoo_pro_monthly`, `hoo_pro_yearly`) rather than a pasted id, so
+there is no price id in any environment variable and nothing to get wrong per
+deployment. The trial length lives in one place, `TRIAL_DAYS` in
+`lib/reports.ts`, so the button copy and the Stripe subscription cannot drift.
 
 **A Checkout Session is the order record.** The reader's answers ride along as
 session metadata and `/orders/[id]` reads them back out of Stripe, so orders
