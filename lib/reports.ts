@@ -159,7 +159,7 @@ export const PRO_ROWS = [
   { sym: '♠', title: 'Your full Life Spread', sub: 'Every planetary period, every year, with its card.' },
   { sym: '♥', title: 'All fifty-two card studies', sub: 'Love, money, health and shadow readings in full.' },
   { sym: '♦', title: 'Saved charts and comparisons', sub: 'Keep the birthdays you read for and set them side by side.' },
-  { sym: '♣', title: 'The complete learning path', sub: 'Fifty lessons across five modules.' },
+  { sym: '♣', title: 'The complete learning path', sub: 'Every lesson, read aloud and yours to keep.' },
 ];
 
 /** Free trial on Pro, in days. Drives both the button copy and the Stripe

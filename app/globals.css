@@ -3432,6 +3432,13 @@ textarea.control {
   resize: vertical;
 }
 
+.admin__new {
+  width: auto;
+  margin-top: 22px;
+  padding-left: 26px;
+  padding-right: 26px;
+}
+
 .admin__file {
   display: flex;
   align-items: center;

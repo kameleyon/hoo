@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { LESSONS } from '@/lib/lessons';
 import { markdownToSpeech } from '@/lib/markdown-text';
+import { nextFreeLesson } from '@/lib/lesson-slots';
 
 /**
  * Where an automation posts a finished lesson.
@@ -54,12 +55,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'invalid JSON' }, { status: 400 });
   }
 
-  const n = String(payload.n ?? '').padStart(2, '0');
-  if (!/^(0[1-9]|[1-4][0-9]|50)$/.test(n)) {
-    return NextResponse.json(
-      { error: 'n must be a lesson number from 01 to 50' },
-      { status: 400 },
-    );
+  // No number means "file this wherever it fits" — for an article the course
+  // outline never named.
+  let n: string;
+  if (payload.n === undefined || payload.n === null || payload.n === '') {
+    try {
+      n = await nextFreeLesson();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'no slot available';
+      return NextResponse.json({ error: message }, { status: 507 });
+    }
+  } else {
+    n = String(payload.n).padStart(2, '0');
+    if (!/^(0[1-9]|[1-9][0-9])$/.test(n)) {
+      return NextResponse.json({ error: 'n must be a two-digit lesson number' }, { status: 400 });
+    }
   }
 
   const body = typeof payload.body === 'string' ? payload.body.trim() : '';

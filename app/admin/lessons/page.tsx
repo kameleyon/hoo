@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LESSONS, lessonTitle } from '@/lib/lessons';
 import { readerIsAdmin } from '@/lib/lesson-records';
+import { NewLessonButton } from '@/components/NewLessonButton';
 import { supabaseServer } from '@/lib/supabase/server';
 import { supabaseConfig } from '@/lib/supabase/config';
 
@@ -25,6 +26,8 @@ export default async function AdminLessonsPage() {
     <main className="view admin">
       <h1 className="page-title">Lessons</h1>
       <p className="page-lede">Write the readings, attach the audio and the PDF, publish.</p>
+
+      <NewLessonButton />
 
       <ol className="lessons" style={{ marginTop: 30 }}>
         {LESSONS.map((lesson) => {

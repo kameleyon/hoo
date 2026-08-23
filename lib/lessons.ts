@@ -6,11 +6,13 @@ export interface Lesson {
 }
 
 /**
- * The fifty lessons, in order.
+ * The lessons, in order.
  *
- * They were grouped into five modules once. The groups are gone and the
- * sequence is the whole structure now, so the number is the only thing a reader
- * needs to keep their place.
+ * The number is a stable key, not a promise about sequence — the page shows no
+ * numbers and sorts written lessons first. That means **new titles must be
+ * added after any lesson that already has content**: inserting one earlier
+ * shifts every number after it, and the bodies in the database would end up
+ * under the wrong titles.
  */
 const RAW: [string, string][] = [
   ['Dealt at birth', '4 min'],
@@ -47,12 +49,22 @@ const RAW: [string, string][] = [
   ['Rows are planets, columns are pressure', '7 min'],
   ['Finding your card in the spread', '5 min'],
   ['Neighbours and what they lend you', '6 min'],
-  ['The Crown row', '5 min'],
+  ['The Crown row: Saturn, Jupiter, Mars', '5 min'],
   ['Mercury and the talking cards', '6 min'],
+  ['Venus and the cards that attract', '6 min'],
+  ['Mars and the cards that push', '6 min'],
+  ['Jupiter and the cards that are given to', '6 min'],
   ['Saturn and the cards that get taught', '6 min'],
   ['Uranus and the cards that break pattern', '6 min'],
   ['Neptune and the cards that imagine', '6 min'],
+  ['Pluto: the card you are being turned into', '7 min'],
+  ['The Moon card and who you answer to', '6 min'],
   ['Reading two spreads side by side', '9 min'],
+  ['The Result card: where the change settles', '6 min'],
+  ['Positive karma: the cards that owe you', '7 min'],
+  ['Challenging karma: the cards you owe', '7 min'],
+  ['Your marriage card, and what it asks for', '7 min'],
+  ['Your money card, and how it earns', '6 min'],
   ['Fifty-two days, seven times', '5 min'],
   ['Counting from your birthday, not January', '4 min'],
   ['Mercury period: what you say yes to', '6 min'],
@@ -79,6 +91,13 @@ export const LESSONS: Lesson[] = RAW.map(([title, mins], i) => ({
   title,
   mins,
 }));
+
+const WORDS: Record<number, string> = {
+  40: 'Forty', 50: 'Fifty', 60: 'Sixty', 70: 'Seventy', 80: 'Eighty', 90: 'Ninety',
+};
+
+/** "Sixty" — so the copy counts itself instead of going stale at fifty. */
+export const LESSON_COUNT_WORD = WORDS[LESSONS.length] ?? String(LESSONS.length);
 
 /**
  * Where the reader left off. Wired to a progress store when lessons ship —

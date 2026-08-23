@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LESSONS, lessonTitle } from '@/lib/lessons';
+import { LESSONS, LESSON_COUNT_WORD, lessonTitle } from '@/lib/lessons';
 import { publishedLessons } from '@/lib/lesson-records';
 import { clock } from '@/lib/duration';
 
 export const metadata: Metadata = {
   title: 'Learn',
-  description: 'Fifty short readings on cardology, in order or not.',
+  description: 'Short readings on cardology, in order or not.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +23,7 @@ export default async function LearnPage() {
   return (
     <main className="view">
       <h1 className="page-title">Learn</h1>
-      <p className="page-lede">Fifty short readings. In order, or not.</p>
+      <p className="page-lede">{LESSON_COUNT_WORD} short readings. In order, or not.</p>
 
       <Link href="/reference" className="learn__reference">
         <span className="label">The three tables</span>

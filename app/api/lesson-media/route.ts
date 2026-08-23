@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   const kind = searchParams.get('kind');
   const wantsDownload = searchParams.get('download') === '1';
 
-  if (!/^(0[1-9]|[1-4][0-9]|50)$/.test(n) || (kind !== 'audio' && kind !== 'pdf')) {
+  if (!/^(0[1-9]|[1-9][0-9])$/.test(n) || (kind !== 'audio' && kind !== 'pdf')) {
     return NextResponse.json({ error: 'bad request' }, { status: 400 });
   }
 

@@ -180,7 +180,11 @@ is not stated anywhere in the reference, so nothing here invents one — see
 
 ## Lessons
 
-The fifty titles live in `lib/lessons.ts` — they are the shape of the course.
+The titles live in `lib/lessons.ts` — they are the shape of the course.
+
+**Adding a title:** put it *after* every lesson that already has content. The
+number is the database key, so inserting one earlier shifts every number after
+it and the bodies would end up under the wrong titles.
 The **content** lives in Supabase, because it is written and rewritten without a
 deploy:
 
@@ -229,6 +233,11 @@ publishes and generates the audio in one action so the two cannot drift apart.
 
 `title` is optional: null keeps the title from the course outline in
 `lib/lessons.ts`, so an automation can rename a lesson without a deploy.
+
+`n` is optional too. Leave it out and the article takes the lowest empty slot,
+or a new number past the end of the outline — which is how something the course
+never named gets published. `/admin/lessons` has a **Write a new article**
+button that does the same thing by hand.
 
 ### Editing
 
