@@ -21,3 +21,11 @@ lib/data/sources/*.png
 lib/data/sources/*.PNG
 lib/data/sources/*.jpg
 lib/data/sources/*.jpeg
+
+# OCR of published books (AC15 Composite & Relationship Cards, Sacred Symbols
+# of the Ancients). They stay on disk so the tables can be extracted from them;
+# the prose itself is someone else's and does not belong in a public repository.
+lib/data/sources/*ocr*.txt
+lib/data/sources/AC15relationshipcard.txt
+lib/data/sources/cardgrid.txt
+lib/data/sources/sacredsymbol.txt
