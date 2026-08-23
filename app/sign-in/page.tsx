@@ -4,6 +4,7 @@ import { SignInView } from '@/components/SignInView';
 import Link from 'next/link';
 import { currentUser } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
+import { siteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Sign in',
@@ -47,5 +48,5 @@ export default async function SignInPage({
   // phishing link borrow our domain to bounce people somewhere else.
   const destination = next && next.startsWith('/') && !next.startsWith('//') ? next : '/you';
 
-  return <SignInView next={destination} />;
+  return <SignInView next={destination} origin={siteUrl()} />;
 }

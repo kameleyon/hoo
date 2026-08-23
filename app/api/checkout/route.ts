@@ -11,6 +11,7 @@ import type { ProPlan } from '@/lib/stripe';
 import { parseDayKey } from '@/lib/cardology';
 import { TRIAL_DAYS, reportById } from '@/lib/reports';
 import { currentUser } from '@/lib/supabase/server';
+import { siteUrl } from '@/lib/site';
 
 /** Stripe caps metadata values at 500 characters. */
 const METADATA_MAX = 500;
@@ -18,9 +19,6 @@ const METADATA_MAX = 500;
 /** A problem with what the browser sent, as opposed to a problem with Stripe. */
 class InvalidRequest extends Error {}
 
-function siteUrl(request: Request): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
-}
 
 /**
  * Turns the builder's answers into Stripe metadata, rejecting anything the
@@ -62,7 +60,7 @@ export async function POST(request: Request) {
   }
 
   const payload = body as { kind?: string; reportId?: string; values?: Record<string, unknown>; plan?: string };
-  const origin = siteUrl(request);
+  const origin = siteUrl();
 
   try {
     if (payload.kind === 'report') {

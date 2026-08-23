@@ -13,7 +13,7 @@ type Stage = 'asking' | 'sending' | 'sent';
  * signed out, which is why this page explains itself rather than acting as a
  * gate in front of the deck.
  */
-export function SignInView({ next }: { next: string }) {
+export function SignInView({ next, origin }: { next: string; origin: string }) {
   const supabase = useSupabase();
   const [email, setEmail] = useState('');
   const [stage, setStage] = useState<Stage>('asking');
@@ -27,7 +27,9 @@ export function SignInView({ next }: { next: string }) {
     const { error: sendError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        // The canonical site, not this tab's host — a preview deployment should
+        // still send a link that lands on the real thing.
+        emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
 
