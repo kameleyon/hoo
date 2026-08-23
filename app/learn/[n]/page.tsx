@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { LESSONS } from '@/lib/lessons';
+import { LESSONS, lessonTitle } from '@/lib/lessons';
 import { LessonBody } from '@/components/LessonBody';
 import { readingMinutes } from '@/lib/markdown-text';
 import { clock } from '@/lib/duration';
@@ -44,9 +44,10 @@ export async function generateMetadata({
   params: Promise<{ n: string }>;
 }): Promise<Metadata> {
   const { n } = await params;
-  const lesson = lessonByNumber(n);
-  if (!lesson) return {};
-  return { title: lesson.title, description: `A cardology lesson: ${lesson.title}.` };
+  if (!lessonByNumber(n)) return {};
+  const record = await lessonRecord(n);
+  const title = lessonTitle(n, record?.title);
+  return { title, description: `A cardology lesson: ${title}.` };
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ n: string }> }) {
@@ -76,7 +77,7 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
       </Link>
 
       <p className="label label--tight">{minutes ? `${minutes} min read` : lesson.mins}</p>
-      <h1 className="lesson__title">{lesson.title}</h1>
+      <h1 className="lesson__title">{lessonTitle(n, record?.title)}</h1>
 
       {!published && (
         <p className="empty-note">

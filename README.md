@@ -207,6 +207,29 @@ Narration is Lemonfox, one voice — **Alloy** — because a course read by a
 different narrator each lesson is a worse course. The PDF is generated from the
 markdown on request, so it is never stale.
 
+### Posting from an automation
+
+```
+POST /api/lessons
+Authorization: Bearer $CONTENT_API_KEY
+Content-Type: application/json
+
+{ "n": "02", "title": "Why the calendar deals backwards", "body": "# ...markdown..." }
+```
+
+Authenticated by a shared token rather than a session, because a scheduled job
+cannot follow a magic link. The token is compared in constant time, and the
+endpoint can only reach the lessons table — not readers, not payments, not
+storage.
+
+**Posts arrive as drafts.** They are invisible on `/learn` until a human opens
+`/admin/lessons/[n]` and presses **Approve — publish and narrate**, which
+publishes and generates the audio in one action so the two cannot drift apart.
+`"publish": true` overrides that for a trusted correction.
+
+`title` is optional: null keeps the title from the course outline in
+`lib/lessons.ts`, so an automation can rename a lesson without a deploy.
+
 ### Editing
 
 `/admin/lessons` — write the reading, upload the audio and PDF, set free or Pro,

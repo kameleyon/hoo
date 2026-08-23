@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { lessonRecord, readerIsAdmin, readerIsPro } from '@/lib/lesson-records';
 import { lessonPdf } from '@/lib/lesson-pdf';
-import { LESSONS } from '@/lib/lessons';
+import { lessonTitle } from '@/lib/lessons';
 
 const BUCKET = 'lesson-media';
 const LINK_SECONDS = 60 * 30;
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'nothing written yet' }, { status: 404 });
     }
 
-    const title = LESSONS.find((l) => l.n === n)?.title ?? `Lesson ${n}`;
+    const title = lessonTitle(n, lesson.title);
     const pdf = await lessonPdf({ title, markdown: lesson.body });
     const filename = `${title.replace(/[^\w\s-]/g, '').trim()}.pdf`;
 

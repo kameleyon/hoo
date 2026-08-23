@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LESSONS } from '@/lib/lessons';
+import { LESSONS, lessonTitle } from '@/lib/lessons';
 import { publishedLessons } from '@/lib/lesson-records';
 import { clock } from '@/lib/duration';
 
@@ -42,7 +42,7 @@ export default async function LearnPage() {
           return (
             <li key={lesson.n} className="lessons__row">
               <Link href={`/learn/${lesson.n}`} className="lessons__title">
-                {lesson.title}
+                {lessonTitle(lesson.n, summary?.title)}
               </Link>
               <span className={`lessons__mins${summary ? '' : ' lessons__mins--soon'}`}>
                 {summary ? (length ?? 'Read') : 'Soon'}

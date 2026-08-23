@@ -4,6 +4,8 @@ import { supabaseConfig } from './supabase/config';
 
 export interface LessonRecord {
   n: string;
+  /** Overrides the course outline when an automation supplied its own. */
+  title: string | null;
   body: string;
   audio_path: string | null;
   pdf_path: string | null;
@@ -26,7 +28,7 @@ export async function lessonRecord(n: string): Promise<LessonRecord | null> {
   const supabase = await supabaseServer();
   const { data, error } = await supabase
     .from('lessons')
-    .select('n, body, audio_path, pdf_path, audio_seconds, access, published_at')
+    .select('n, title, body, audio_path, pdf_path, audio_seconds, access, published_at')
     .eq('n', n)
     .maybeSingle();
 
@@ -39,6 +41,7 @@ export async function lessonRecord(n: string): Promise<LessonRecord | null> {
 
 export interface LessonSummary {
   n: string;
+  title: string | null;
   audioSeconds: number | null;
 }
 
@@ -52,7 +55,7 @@ export async function publishedLessons(): Promise<Map<string, LessonSummary>> {
   const supabase = await supabaseServer();
   const { data, error } = await supabase
     .from('lessons')
-    .select('n, audio_seconds')
+    .select('n, title, audio_seconds')
     .not('published_at', 'is', null);
 
   if (error) {
@@ -62,7 +65,11 @@ export async function publishedLessons(): Promise<Map<string, LessonSummary>> {
   return new Map(
     (data ?? []).map((row) => [
       row.n as string,
-      { n: row.n as string, audioSeconds: (row.audio_seconds as number | null) ?? null },
+      {
+        n: row.n as string,
+        title: (row.title as string | null) ?? null,
+        audioSeconds: (row.audio_seconds as number | null) ?? null,
+      },
     ]),
   );
 }

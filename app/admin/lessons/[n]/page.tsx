@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { LessonEditor } from '@/components/LessonEditor';
-import { LESSONS } from '@/lib/lessons';
+import { LESSONS, lessonTitle } from '@/lib/lessons';
 import { lessonRecord, readerIsAdmin } from '@/lib/lesson-records';
 import { supabaseConfig } from '@/lib/supabase/config';
 
@@ -21,7 +21,8 @@ export default async function EditLessonPage({ params }: { params: Promise<{ n: 
     <LessonEditor
       lesson={{
         n,
-        title: lesson.title,
+        title: lessonTitle(n, record.title),
+        outlineTitle: lesson.title,
         body: record.body,
         audio_path: record.audio_path,
         pdf_path: record.pdf_path,

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { LESSONS } from '@/lib/lessons';
+import { LESSONS, lessonTitle } from '@/lib/lessons';
 import { readerIsAdmin } from '@/lib/lesson-records';
 import { supabaseServer } from '@/lib/supabase/server';
 import { supabaseConfig } from '@/lib/supabase/config';
@@ -17,7 +17,7 @@ export default async function AdminLessonsPage() {
   const supabase = await supabaseServer();
   const { data } = await supabase
     .from('lessons')
-    .select('n, body, audio_path, pdf_path, access, published_at');
+    .select('n, title, body, audio_path, pdf_path, access, published_at');
 
   const rows = new Map((data ?? []).map((r) => [r.n as string, r]));
 
@@ -41,7 +41,7 @@ export default async function AdminLessonsPage() {
             <li key={lesson.n} className="lessons__row">
               <span className="lessons__n">{lesson.n}</span>
               <Link href={`/admin/lessons/${lesson.n}`} className="lessons__title">
-                {lesson.title}
+                {lessonTitle(lesson.n, row?.title as string | null)}
               </Link>
               <span className="admin__state" data-state={state.split(' ')[0]}>
                 {state}

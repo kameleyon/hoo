@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { DeckView } from '@/components/DeckView';
-import { LESSONS } from '@/lib/lessons';
+import { LESSONS, lessonTitle } from '@/lib/lessons';
 import { publishedLessons } from '@/lib/lesson-records';
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default async function DeckPage({
   const published = await publishedLessons();
   const lessons = LESSONS.filter((l) => published.has(l.n)).map((l) => ({
     n: l.n,
-    title: l.title,
+    title: lessonTitle(l.n, published.get(l.n)?.title),
     audioSeconds: published.get(l.n)?.audioSeconds ?? null,
   }));
 

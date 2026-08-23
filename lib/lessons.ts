@@ -65,6 +65,15 @@ const RAW: [string, string][] = [
   ['Closing the year and reading the next', '7 min'],
 ];
 
+/**
+ * The title to show for a lesson: whatever the database holds, else the course
+ * outline. One function so the page, the list, the search and the PDF cannot
+ * disagree about what a lesson is called.
+ */
+export function lessonTitle(n: string, stored?: string | null): string {
+  return stored?.trim() || LESSONS.find((l) => l.n === n)?.title || `Lesson ${n}`;
+}
+
 export const LESSONS: Lesson[] = RAW.map(([title, mins], i) => ({
   n: String(i + 1).padStart(2, '0'),
   title,

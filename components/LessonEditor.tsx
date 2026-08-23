@@ -9,7 +9,10 @@ const BUCKET = 'lesson-media';
 
 export interface EditableLesson {
   n: string;
+  /** What it is called now — the stored title, or the course outline's. */
   title: string;
+  /** The course outline's title, shown as the placeholder to fall back to. */
+  outlineTitle: string;
   body: string;
   audio_path: string | null;
   pdf_path: string | null;
@@ -32,6 +35,7 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
   const supabase = useSupabase();
   const router = useRouter();
 
+  const [title, setTitle] = useState(lesson.title);
   const [body, setBody] = useState(lesson.body);
   const [access, setAccess] = useState(lesson.access);
   const [published, setPublished] = useState(lesson.published);
@@ -50,7 +54,7 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
     try {
       const { error: saveError } = await supabase
         .from('lessons')
-        .update({ body })
+        .update({ body, title: title.trim() === lesson.outlineTitle ? null : title.trim() || null })
         .eq('n', lesson.n);
       if (saveError) throw new Error(saveError.message);
 
@@ -84,6 +88,7 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
     const { error } = await supabase
       .from('lessons')
       .update({
+        title: title.trim() === lesson.outlineTitle ? null : title.trim() || null,
         body,
         access,
         published_at: published ? new Date().toISOString() : null,
@@ -98,6 +103,31 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
     }
     setStatus({ kind: 'done', message: 'Saved' });
     router.refresh();
+  };
+
+  /**
+   * The approval step. An automation posts a draft; this is the human saying
+   * yes — it publishes and narrates in one action so the two cannot drift.
+   */
+  const approve = async () => {
+    if (!supabase) return;
+    setStatus({ kind: 'working', message: 'Publishing' });
+    const { error } = await supabase
+      .from('lessons')
+      .update({
+        title: title.trim() === lesson.outlineTitle ? null : title.trim() || null,
+        body,
+        access,
+        published_at: new Date().toISOString(),
+      })
+      .eq('n', lesson.n);
+
+    if (error) {
+      setStatus({ kind: 'error', message: error.message });
+      return;
+    }
+    setPublished(true);
+    await generateNarration();
   };
 
   const upload = async (file: File, kind: 'audio' | 'pdf') => {
@@ -156,7 +186,23 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
       </Link>
 
       <p className="label label--tight">Lesson {lesson.n}</p>
-      <h1 className="page-title">{lesson.title}</h1>
+      <h1 className="page-title">{title || lesson.outlineTitle}</h1>
+
+      <section className="section">
+        <h2 className="label rule-under">Title</h2>
+        <input
+          type="text"
+          className="control"
+          style={{ marginTop: 12 }}
+          value={title}
+          maxLength={120}
+          placeholder={lesson.outlineTitle}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <p className="fineprint" style={{ textAlign: 'left' }}>
+          Leave it matching the outline to keep the course title.
+        </p>
+      </section>
 
       <section className="section">
         <h2 className="label rule-under">The reading</h2>
@@ -275,9 +321,20 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
       </section>
 
       <div className="admin__save">
+        {!published && (
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => void approve()}
+            disabled={status.kind === 'working'}
+            style={{ marginBottom: 10 }}
+          >
+            <span>{status.kind === 'working' ? 'Working' : 'Approve — publish and narrate'}</span>
+          </button>
+        )}
         <button
           type="button"
-          className="btn-primary"
+          className={published ? 'btn-primary' : 'btn-secondary'}
           onClick={() => void save()}
           disabled={status.kind === 'working'}
         >
