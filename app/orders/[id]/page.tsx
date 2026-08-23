@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type Stripe from 'stripe';
 import { DeliveredView } from '@/components/DeliveredView';
 import { stripe } from '@/lib/stripe';
+import { ensureReportStarted } from '@/lib/report-jobs';
 
 export const metadata: Metadata = {
   title: 'Your reading',
@@ -36,6 +37,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </main>
     );
   }
+
+  // Visiting a paid order is itself enough to get it written. Without this the
+  // reading depends entirely on a webhook arriving, and the reader is the one
+  // person guaranteed to notice when it did not.
+  await ensureReportStarted(session);
 
   return <DeliveredView session={session} />;
 }

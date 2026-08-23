@@ -1,5 +1,6 @@
 import 'server-only';
 import type Stripe from 'stripe';
+import { waitUntil } from '@vercel/functions';
 import { supabaseAdmin } from './supabase/admin';
 import { compatibilityBrief } from './love-brief';
 import { writeLoveReport } from './writer';
@@ -183,6 +184,36 @@ function titleFor(a: string, b: string): string {
     return `${d} ${MONTHS[m - 1] ?? ''}`.trim();
   };
   return `${say(a)} and ${say(b)}`;
+}
+
+/**
+ * Makes sure a paid order is actually being written, whoever asks.
+ *
+ * The webhook is the fast path, not the only one. A destination can be
+ * deleted, disabled, pointed at a stale domain, or never configured, and every
+ * one of those turns a paid order into a page that says "Writing" forever. So
+ * the order page calls this too: if the money is real and no reading exists,
+ * one starts now.
+ *
+ * Safe to call on every render. Enqueuing ignores duplicates and claiming is
+ * atomic, so a reader refreshing the page cannot start a second writer or
+ * disturb one already running.
+ */
+export async function ensureReportStarted(session: Stripe.Checkout.Session): Promise<void> {
+  if (session.payment_status === 'unpaid') return;
+
+  await enqueueReport(session);
+
+  const job = await jobFor(session.id);
+  if (!job || job.status === 'ready' || job.status === 'failed') return;
+
+  // Only step in when nothing else has touched it recently, so a reader
+  // watching the page does not interrupt the webhook's own attempt.
+  const idleMs = Date.now() - new Date(job.updated_at).getTime();
+  if (job.status === 'writing' && idleMs < STALE_MINUTES * 60_000) return;
+  if (job.attempts >= MAX_ATTEMPTS) return;
+
+  waitUntil(processJob(job, session));
 }
 
 /** Jobs that never finished, oldest first, for a retry sweep. */
