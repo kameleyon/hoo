@@ -137,12 +137,21 @@ function blocks(markdown: string): React.ReactElement[] {
   return out;
 }
 
-export async function lessonPdf({
+/**
+ * Any Haus of Oracle document: same masthead, same type, same footer.
+ *
+ * The eyebrow is the only thing that differs between a lesson and a paid
+ * reading, so they share a renderer rather than drifting apart into two that
+ * are almost the same.
+ */
+export async function documentPdf({
   title,
   markdown,
+  eyebrow = 'A LESSON',
 }: {
   title: string;
   markdown: string;
+  eyebrow?: string;
 }): Promise<Buffer> {
   const mark = markDataUri();
 
@@ -154,7 +163,7 @@ export async function lessonPdf({
           <Text style={styles.wordmark}>HAUS OF ORACLE</Text>
         </View>
 
-        <Text style={styles.eyebrow}>A LESSON</Text>
+        <Text style={styles.eyebrow}>{eyebrow}</Text>
         <Text style={styles.title}>{title}</Text>
 
         {blocks(markdown)}
@@ -168,4 +177,9 @@ export async function lessonPdf({
   );
 
   return renderToBuffer(document);
+}
+
+/** The lesson flavour, kept so existing callers read the way they always did. */
+export function lessonPdf(args: { title: string; markdown: string }): Promise<Buffer> {
+  return documentPdf(args);
 }

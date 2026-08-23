@@ -27,7 +27,7 @@ function Shell({ children }: { children: React.ReactNode }) {
  * all claims, and making them about something unwritten is how a reader ends
  * up believing they were sent something they never received.
  */
-export function DeliveredView({ session }: { session: Stripe.Checkout.Session }) {
+export async function DeliveredView({ session }: { session: Stripe.Checkout.Session }) {
   const report = reportById(session.metadata?.reportId ?? '');
 
   if (!report) {
@@ -42,7 +42,7 @@ export function DeliveredView({ session }: { session: Stripe.Checkout.Session })
     );
   }
 
-  const { state, waitedMinutes } = orderStatus(session);
+  const { state, waitedMinutes } = await orderStatus(session);
 
   // The reading is what was bought, so an unpaid session is not shown one. It
   // gets the truth about its own payment and nothing else.
@@ -64,7 +64,7 @@ export function DeliveredView({ session }: { session: Stripe.Checkout.Session })
     );
   }
 
-  const assets = orderAssets(session);
+  const assets = await orderAssets(session);
   const doc = documentNames(report);
   const ready = state === 'ready';
   const email = session.customer_details?.email;
@@ -130,7 +130,7 @@ export function DeliveredView({ session }: { session: Stripe.Checkout.Session })
               </div>
               {ready && (
                 <span className="filerow__sub" style={{ flex: 'none', marginTop: 0 }}>
-                  {doc.mp3Len}
+                  {assets.seconds ? `${Math.round(assets.seconds / 60)} min` : doc.mp3Len}
                 </span>
               )}
             </div>
@@ -141,6 +141,18 @@ export function DeliveredView({ session }: { session: Stripe.Checkout.Session })
           <p className="fineprint" style={{ textAlign: 'left', marginTop: 16 }} aria-live="polite">
             {report.turn}. This page updates itself, so you can leave it open.
             {email ? ` Both files go to ${email} as soon as they exist.` : ''}
+          </p>
+        )}
+
+        {state === 'failed' && (
+          <p
+            className="fineprint fineprint--error"
+            style={{ textAlign: 'left', marginTop: 16 }}
+            role="alert"
+          >
+            Something went wrong while writing this and it did not recover. You have not been
+            forgotten and you will not be charged for nothing: reply to your receipt and we will
+            either finish it by hand or refund you.
           </p>
         )}
 

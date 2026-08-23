@@ -18,6 +18,12 @@ import {
  * The raw request body is required for signature verification, so nothing may
  * parse it first.
  */
+/**
+ * The reply goes back in milliseconds, but the reading it starts keeps running
+ * inside this invocation, so the function needs room to finish it.
+ */
+export const maxDuration = 300;
+
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) {

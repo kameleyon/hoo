@@ -1,6 +1,8 @@
 import 'server-only';
 import type Stripe from 'stripe';
+import { waitUntil } from '@vercel/functions';
 import { supabaseAdmin } from './supabase/admin';
+import { enqueueReport, jobFor, processJob } from './report-jobs';
 
 /**
  * What happens after the money moves.
@@ -65,13 +67,18 @@ export async function fulfilReport(
   eventId: string,
 ): Promise<void> {
   const reportId = session.metadata?.reportId ?? 'unknown';
+  console.log(`[fulfilment] paid — report=${reportId} session=${session.id} event=${eventId}`);
 
-  // TODO(fulfilment): write the reading, render the PDF, narrate it, store both
-  // against session.id so orderAssets() can find them. Needs a blob store and a
-  // job runner — see README. Blob existence is the idempotency check.
-  console.warn(
-    `[fulfilment] paid but not generated — report=${reportId} session=${session.id} event=${eventId}`,
-  );
+  await enqueueReport(session);
+
+  // Stripe treats a slow endpoint as a failed one, and writing a reading takes
+  // minutes, so the response goes back now and the work continues after it.
+  // waitUntil keeps the function alive without holding up the reply; anything
+  // it does not finish is left as a row for the retry sweep.
+  const job = await jobFor(session.id);
+  if (job && job.status !== 'ready') {
+    waitUntil(processJob(job, session));
+  }
 }
 
 export async function markPaymentFailed(session: Stripe.Checkout.Session): Promise<void> {
@@ -154,15 +161,28 @@ export async function entitlementFromInvoice(
 export interface OrderAssets {
   pdfUrl: string | null;
   audioUrl: string | null;
+  /** The narration's true running time, once it exists. */
+  seconds: number | null;
 }
 
 /**
- * The finished files for an order. Returns nothing until fulfilment above is
- * implemented, and the delivered view reads that as "written, not ready" —
- * rather than offering a download that would 404.
+ * The finished files for an order.
+ *
+ * These are route URLs rather than signed storage links. A signed link expires,
+ * and a page that renders one is wrong the moment it is bookmarked or emailed,
+ * so the route re-checks the payment and mints a fresh link each time it is
+ * followed.
  */
-export function orderAssets(_session: Stripe.Checkout.Session): OrderAssets {
-  return { pdfUrl: null, audioUrl: null };
+export async function orderAssets(session: Stripe.Checkout.Session): Promise<OrderAssets> {
+  const job = await jobFor(session.id);
+  if (!job || job.status !== 'ready') return { pdfUrl: null, audioUrl: null, seconds: null };
+
+  const base = `/api/reports/media?session=${encodeURIComponent(session.id)}`;
+  return {
+    pdfUrl: job.pdf_path ? `${base}&kind=pdf` : null,
+    audioUrl: job.audio_path ? `${base}&kind=audio` : null,
+    seconds: job.audio_seconds,
+  };
 }
 
 /**
@@ -183,7 +203,9 @@ export type OrderState =
   /** Paid and overdue. Something needs a person to look at it. */
   | 'late'
   /** Files exist. */
-  | 'ready';
+  | 'ready'
+  /** Tried and gave up. A person has to look at this one. */
+  | 'failed';
 
 export interface OrderStatus {
   state: OrderState;
@@ -200,13 +222,18 @@ export interface OrderStatus {
  * that is running slowly from one that was never started, which is why 'late'
  * says only that it is overdue and never guesses at a cause.
  */
-export function orderStatus(session: Stripe.Checkout.Session): OrderStatus {
-  const assets = orderAssets(session);
+export async function orderStatus(session: Stripe.Checkout.Session): Promise<OrderStatus> {
   const createdMs = (session.created ?? 0) * 1000;
   const waitedMinutes = createdMs ? Math.floor((Date.now() - createdMs) / 60000) : 0;
 
-  if (assets.pdfUrl || assets.audioUrl) return { state: 'ready', waitedMinutes };
   if (session.payment_status === 'unpaid') return { state: 'unpaid', waitedMinutes };
+
+  const job = await jobFor(session.id);
+  if (job?.status === 'ready') return { state: 'ready', waitedMinutes };
+  if (job?.status === 'failed') return { state: 'failed', waitedMinutes };
+
+  // Paid with no job row at all is itself a problem worth surfacing once the
+  // window has passed: it means the webhook never arrived.
   return {
     state: waitedMinutes >= LATE_AFTER_MINUTES ? 'late' : 'writing',
     waitedMinutes,
