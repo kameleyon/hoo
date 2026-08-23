@@ -18,7 +18,8 @@
     "data:reference": "node scripts/build-reference-data.mjs",
     "data:verify": "node scripts/verify-reference.mjs",
     "email:build": "node scripts/build-email-templates.mjs",
-    "grant:admin": "node --env-file=.env.local scripts/grant-admin.mjs"
+    "grant:admin": "node --env-file=.env.local scripts/grant-admin.mjs",
+    "lessons:check": "node scripts/check-lessons.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.7.0",
