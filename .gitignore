@@ -11,3 +11,13 @@ next-env.d.ts
 # because scripts/build-card-data.mjs regenerates lib/data/*.json from it.
 .design-src/*
 !.design-src/cardData.js
+
+# Source material: the CSVs and OCR text are small and worth versioning, the
+# scanned books are 32 MB and belong to someone else. They stay on disk and out
+# of a public repository.
+lib/data/sources/*.pdf
+lib/data/sources/*.PDF
+lib/data/sources/*.png
+lib/data/sources/*.PNG
+lib/data/sources/*.jpg
+lib/data/sources/*.jpeg
