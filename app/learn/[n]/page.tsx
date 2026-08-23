@@ -45,10 +45,7 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
         ← Learn
       </Link>
 
-      <p className="label label--tight">
-        Lesson {n} of {LESSONS.length}
-        {minutes ? ` · ${minutes} min read` : ` · ${lesson.mins}`}
-      </p>
+      <p className="label label--tight">{minutes ? `${minutes} min read` : lesson.mins}</p>
       <h1 className="lesson__title">{lesson.title}</h1>
 
       {!published && (

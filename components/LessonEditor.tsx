@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSupabase } from './SupabaseProvider';
+import { VOICES } from '@/lib/voices';
 
 const BUCKET = 'lesson-media';
 
@@ -37,7 +38,37 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
   const [published, setPublished] = useState(lesson.published);
   const [audioPath, setAudioPath] = useState(lesson.audio_path);
   const [pdfPath, setPdfPath] = useState(lesson.pdf_path);
+  const [voice, setVoice] = useState<string>(VOICES[0].id);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
+
+  /**
+   * Reads the *saved* body, not the textarea — so unsaved edits are never
+   * silently narrated and then contradicted by what is on the page.
+   */
+  const generateNarration = async () => {
+    setStatus({ kind: 'working', message: 'Reading the lesson aloud' });
+    try {
+      const response = await fetch('/api/lesson-media/narrate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ n: lesson.n, voice }),
+      });
+      const data: { path?: string; seconds?: number; characters?: number; error?: string } =
+        await response.json();
+      if (!response.ok || !data.path) throw new Error(data.error ?? 'narration failed');
+      setAudioPath(data.path);
+      setStatus({
+        kind: 'done',
+        message: `Narrated ${data.characters} characters, about ${Math.round((data.seconds ?? 0) / 60)} min`,
+      });
+      router.refresh();
+    } catch (error) {
+      setStatus({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'narration failed',
+      });
+    }
+  };
 
   const save = async () => {
     if (!supabase) return;
@@ -142,6 +173,30 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
           <div>
             <p className="label label--tight">Narration</p>
             <p className="admin__file-name">{audioPath ?? 'Nothing uploaded'}</p>
+            <div className="admin__row" style={{ marginTop: 10 }}>
+              <select
+                className="control"
+                style={{ width: 190 }}
+                value={voice}
+                onChange={(e) => setVoice(e.target.value)}
+                aria-label="Narration voice"
+              >
+                {VOICES.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ width: 'auto', paddingLeft: 18, paddingRight: 18 }}
+                onClick={() => void generateNarration()}
+                disabled={status.kind === 'working'}
+              >
+                {audioPath ? 'Re-read aloud' : 'Read aloud'}
+              </button>
+            </div>
           </div>
           <div className="admin__file-actions">
             <label className="btn-secondary admin__upload">
