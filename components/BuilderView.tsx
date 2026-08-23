@@ -7,7 +7,7 @@ import { MonthDaySelect } from './MonthDaySelect';
 import { useAccount } from './AccountProvider';
 import { cardForKey } from '@/lib/cardology';
 import { readWord } from '@/lib/reference';
-import { FIELD_PLACEHOLDER } from '@/lib/reports';
+import { FIELD_PLACEHOLDER, priceFor } from '@/lib/reports';
 import type { ReportDefinition } from '@/lib/reports';
 import type { DayKey } from '@/lib/types';
 
@@ -20,7 +20,7 @@ const SEED_DATES: Record<string, DayKey> = {
 };
 
 export function BuilderView({ report }: { report: ReportDefinition }) {
-  const { birthday } = useAccount();
+  const { birthday, isPro } = useAccount();
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +32,12 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
     if (key === 'a' && birthday) return birthday;
     return SEED_DATES[key] ?? '01-01';
   };
+
+  // Pro status arrives a moment after first paint, so this starts at the
+  // standard price and only ever corrects downward. Showing the lower price
+  // first and then asking for more would be the version that matters.
+  const price = priceFor(report, isPro);
+  const discounted = price !== report.price;
 
   const set = (key: string, value: string) =>
     setOverrides((prev) => ({ ...prev, [key]: value }));
@@ -167,19 +173,22 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
 
           <div className="builder__total">
             <span className="label label--tight">Total</span>
-            <span className="builder__total-price">{report.price}</span>
+            <span className="builder__total-price">{price}</span>
           </div>
 
           <button type="button" className="btn-primary" onClick={generate} disabled={submitting}>
             <span>{submitting ? 'Opening checkout' : 'Generate report'}</span>
-            <span className="btn-primary__price">{report.price}</span>
+            <span className="btn-primary__price">{price}</span>
           </button>
           {error ? (
             <p className="fineprint fineprint--error" role="alert">
               {error}
             </p>
           ) : (
-            <p className="fineprint">Charged once. No subscription.</p>
+            <p className="fineprint">
+              {discounted ? `Pro price, down from ${report.price}. ` : ''}
+              Charged once. No subscription.
+            </p>
           )}
         </aside>
       </div>

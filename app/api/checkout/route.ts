@@ -9,7 +9,8 @@ import {
 } from '@/lib/stripe';
 import type { ProPlan } from '@/lib/stripe';
 import { parseDayKey } from '@/lib/cardology';
-import { TRIAL_DAYS, reportById } from '@/lib/reports';
+import { TRIAL_DAYS, priceFor, reportById } from '@/lib/reports';
+import { readerIsPro } from '@/lib/lesson-records';
 import { currentUser } from '@/lib/supabase/server';
 import { siteUrl } from '@/lib/site';
 
@@ -69,6 +70,13 @@ export async function POST(request: Request) {
 
       const metadata = reportMetadata(report.id, payload.values ?? {});
 
+      // Established from the session cookie, never from the request body: the
+      // discount is worth real money, so asking the browser whether it deserves
+      // one would be asking the buyer to set their own price.
+      const pro = await readerIsPro();
+      const price = priceFor(report, pro);
+      metadata.tier = pro ? 'pro' : 'standard';
+
       const session = await stripe().checkout.sessions.create({
         mode: 'payment',
         integration_identifier: INTEGRATION_ID.report,
@@ -77,7 +85,7 @@ export async function POST(request: Request) {
             quantity: 1,
             price_data: {
               currency: 'usd',
-              unit_amount: priceToMinorUnits(report.price),
+              unit_amount: priceToMinorUnits(price),
               product_data: {
                 name: report.title,
                 description: report.line,

@@ -11,6 +11,13 @@ export interface ReportDefinition {
   cat: string;
   title: string;
   price: string;
+  /**
+   * What a Pro subscriber pays instead. Absent means the report costs the same
+   * for everyone, which is the honest default until a Pro price is decided for
+   * it. Never read this in the browser to decide what to charge - it is a
+   * display value, and the amount is resolved again on the server.
+   */
+  proPrice?: string;
   line: string;
   pages: string;
   audio: string;
@@ -23,12 +30,25 @@ export interface ReportDefinition {
 
 const field = (key: string, kind: FieldKind, label: string): ReportField => ({ key, kind, label });
 
+/**
+ * What this reader pays for this report.
+ *
+ * The builder calls it to label the button and the checkout route calls it to
+ * set the amount, so the price on screen and the price charged come from the
+ * same line of code. Whether someone is Pro is established server-side before
+ * the amount is read - the browser is only ever told the answer.
+ */
+export function priceFor(report: ReportDefinition, pro: boolean): string {
+  return pro ? (report.proPrice ?? report.price) : report.price;
+}
+
 export const REPORTS: ReportDefinition[] = [
   {
     id: 'love',
     cat: 'Relationships',
     title: 'Love & Compatibility',
-    price: '$19',
+    price: '$3.49',
+    proPrice: '$2.59',
     line: 'Two cards read against each other — attraction, friction, and the pattern that keeps repeating.',
     pages: '18 pages',
     audio: '14 min narration',
