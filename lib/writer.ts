@@ -35,9 +35,19 @@ async function systemPrompt(): Promise<string> {
   return cachedPrompt;
 }
 
-/** The em dash is banned by the prompt, so it is also removed mechanically. */
+/**
+ * The em dash is banned by the prompt, so it is also removed mechanically.
+ *
+ * Order matters. A dash opening a line is an attribution, and turning that one
+ * into a comma produces a line that starts ", Sacred Symbols" — so those go
+ * first and are dropped rather than replaced. Only then is the ordinary
+ * mid-sentence dash swapped for a comma.
+ */
 function scrub(text: string): string {
-  return text.replace(/\s*—\s*/g, ', ').replace(/—/g, ',').trim();
+  return text
+    .replace(/^(\s*[*_>]*)\s*[—–]\s*/gm, '$1')
+    .replace(/\s*[—–]\s*/g, ', ')
+    .trim();
 }
 
 export interface Written {

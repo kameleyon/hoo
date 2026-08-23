@@ -127,6 +127,18 @@ export function compatibilityBrief(aKey: DayKey, bKey: DayKey): { brief: string;
           .join(', ')}`
       : `Any card that appears as a companion in both charts: ${NA}`,
     '',
+    '## Instructions for missing data',
+    // Section 2 of the prompt asks for a quote per person. None of the
+    // source's quotes were ever digitised, and a required section with no data
+    // is an invitation to fill it: the first run quoted the card database and
+    // credited it to a real published book. Saying "not available" was not
+    // enough, so the section is now forbidden explicitly.
+    'No Sacred Symbols quotes are available for either person.',
+    'Omit the Quote Block section entirely. Do not write it.',
+    'Never attribute any text to Sacred Symbols of the Ancients, or to any',
+    'other named work, anywhere in this report. Text supplied above comes from',
+    'our own card notes and must never be presented as a quotation from a book.',
+    '',
     '## Scores (already calculated, use verbatim)',
     ...reading.categories.map((c) => `${c.name}: ${c.score}`),
     `Overall: ${reading.overall}`,
