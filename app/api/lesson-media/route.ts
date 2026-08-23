@@ -1,17 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { lessonRecord, readerIsAdmin, readerIsPro } from '@/lib/lesson-records';
+import { lessonPdf } from '@/lib/lesson-pdf';
+import { LESSONS } from '@/lib/lessons';
 
 const BUCKET = 'lesson-media';
 const LINK_SECONDS = 60 * 30;
 
 /**
- * Hands out a short-lived link to a lesson's audio or PDF.
+ * A lesson's audio or PDF.
  *
- * The bucket is private, so a path is not a URL and guessing one gets you
- * nothing. Access is decided here — published, and Pro if the lesson says Pro —
- * and only then is a signed link minted and redirected to. The redirect is what
- * lets `<audio src>` and a download link work without any client-side signing.
+ * Audio follows the lesson's own access level. The PDF is Pro either way — it
+ * is the thing a reader keeps, so it is the thing worth subscribing for — and
+ * is generated from the markdown on request unless a file has been uploaded to
+ * stand in for it.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -29,13 +31,44 @@ export async function GET(request: NextRequest) {
   if (!lesson.published_at && !isEditor) {
     return NextResponse.json({ error: 'not found' }, { status: 404 });
   }
-  if (lesson.access === 'pro' && !isEditor && !(await readerIsPro())) {
-    return NextResponse.json({ error: 'this lesson needs Pro' }, { status: 403 });
+
+  const isPro = isEditor || (await readerIsPro());
+
+  if (kind === 'pdf') {
+    if (!isPro) {
+      return NextResponse.json({ error: 'the PDF is part of Pro' }, { status: 403 });
+    }
+
+    // An uploaded file wins: if someone has typeset it properly, serve that.
+    if (lesson.pdf_path) return signed(lesson.pdf_path, n, 'pdf');
+
+    if (!lesson.body.trim()) {
+      return NextResponse.json({ error: 'nothing written yet' }, { status: 404 });
+    }
+
+    const title = LESSONS.find((l) => l.n === n)?.title ?? `Lesson ${n}`;
+    const pdf = await lessonPdf({ title, markdown: lesson.body });
+    const filename = `${title.replace(/[^\w\s-]/g, '').trim()}.pdf`;
+
+    return new NextResponse(new Uint8Array(pdf), {
+      headers: {
+        'content-type': 'application/pdf',
+        'content-disposition': `attachment; filename="${filename}"`,
+        'cache-control': 'private, no-store',
+      },
+    });
   }
 
-  const path = kind === 'audio' ? lesson.audio_path : lesson.pdf_path;
-  if (!path) return NextResponse.json({ error: 'nothing uploaded yet' }, { status: 404 });
+  if (lesson.access === 'pro' && !isPro) {
+    return NextResponse.json({ error: 'this lesson needs Pro' }, { status: 403 });
+  }
+  if (!lesson.audio_path) {
+    return NextResponse.json({ error: 'nothing uploaded yet' }, { status: 404 });
+  }
+  return signed(lesson.audio_path, n, 'audio');
+}
 
+async function signed(path: string, n: string, kind: string) {
   const { data, error } = await supabaseAdmin()
     .storage.from(BUCKET)
     .createSignedUrl(path, LINK_SECONDS, kind === 'pdf' ? { download: true } : undefined);
@@ -45,8 +78,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'could not open the file' }, { status: 500 });
   }
 
-  // The signed link is itself the secret, so it must not be cached by anything
-  // in between.
+  // The signed link is the secret, so nothing in between may cache it.
   return NextResponse.redirect(data.signedUrl, {
     status: 307,
     headers: { 'cache-control': 'private, no-store' },

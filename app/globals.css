@@ -3205,6 +3205,105 @@ textarea.control {
   border-top: 1px solid var(--line);
 }
 
+.lesson__subheading {
+  font-family: var(--display);
+  font-size: 20px;
+  line-height: 1.25;
+  color: var(--ink);
+  margin-top: 26px;
+}
+
+.lesson__list {
+  margin-top: 14px;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lesson__list-item {
+  font-family: var(--body);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink-body);
+  padding-left: 20px;
+  position: relative;
+}
+
+.lesson__list-item::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  color: var(--blue);
+}
+
+.lesson__list--ordered {
+  counter-reset: lesson-item;
+}
+
+.lesson__list--ordered .lesson__list-item::before {
+  counter-increment: lesson-item;
+  content: counter(lesson-item) '.';
+  left: 0;
+  font-size: 14px;
+  color: var(--muted-3);
+}
+
+.lesson__quote {
+  margin: 22px 0 0;
+  padding-left: 18px;
+  border-left: 2px solid var(--line);
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.lesson__rule {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 30px 0;
+}
+
+.lesson__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.lesson__image {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+/* The PDF is Pro. Show the control, plainly out of reach. */
+.lesson__pdf-locked {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: none;
+}
+
+.lesson__pdf-locked .lesson__pdf {
+  color: var(--muted-3);
+  border-color: var(--line);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.lesson__pdf-note {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue);
+  text-align: center;
+}
+
 .lesson__media {
   display: flex;
   flex-wrap: wrap;

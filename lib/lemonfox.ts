@@ -1,5 +1,6 @@
 import 'server-only';
 import type { VoiceId } from './voices';
+import { markdownToSpeech } from './markdown-text';
 
 /**
  * Lemonfox text-to-speech.
@@ -67,16 +68,10 @@ export async function narrate(text: string, voice: VoiceId): Promise<Narration> 
 /**
  * What actually gets read aloud.
  *
- * Section headings are dropped rather than spoken: "What the chart is doing"
- * read as a sentence sounds like a question nobody answers. Paragraphs are
- * joined with a pause instead.
+ * Lessons are markdown, and a voice given markdown says "hash hash" and
+ * "asterisk asterisk". The source is lexed and the syntax dropped, keeping
+ * every word the author wrote — see lib/markdown-text.ts.
  */
 export function narrationScript(body: string): string {
-  return body
-    .replace(/\r\n/g, '\n')
-    .split(/\n\s*\n/)
-    .map((block) => block.trim())
-    .filter((block) => block && !block.startsWith('## '))
-    .map((block) => block.split('\n').join(' '))
-    .join('\n\n');
+  return markdownToSpeech(body);
 }

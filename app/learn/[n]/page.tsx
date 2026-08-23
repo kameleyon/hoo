@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LESSONS } from '@/lib/lessons';
-import { parseLessonBody, readingMinutes } from '@/lib/lesson-body';
+import { LessonBody } from '@/components/LessonBody';
+import { readingMinutes } from '@/lib/markdown-text';
 import { lessonRecord, readerIsAdmin, readerIsPro } from '@/lib/lesson-records';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export async function generateMetadata({
   const { n } = await params;
   const lesson = lessonByNumber(n);
   if (!lesson) return {};
-  return { title: lesson.title, description: `Lesson ${n} of ${LESSONS.length}.` };
+  return { title: lesson.title, description: `A cardology lesson: ${lesson.title}.` };
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ n: string }> }) {
@@ -36,8 +37,11 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
   const previous = index > 0 ? LESSONS[index - 1] : null;
   const next = index < LESSONS.length - 1 ? LESSONS[index + 1] : null;
 
-  const blocks = record && published && !locked ? parseLessonBody(record.body) : [];
-  const minutes = record?.body ? readingMinutes(record.body) : null;
+  const readable = Boolean(record && published && !locked && record.body.trim());
+  const minutes = record?.body?.trim() ? readingMinutes(record.body) : null;
+  // The PDF is Pro whatever the lesson costs — it is the thing you keep.
+  const canDownload = isEditor || (await readerIsPro());
+  const hasPdf = Boolean(record?.body?.trim() || record?.pdf_path);
 
   return (
     <main className="view lesson">
@@ -65,9 +69,9 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
         </>
       )}
 
-      {(record?.audio_path || record?.pdf_path) && !locked && published && (
+      {published && !locked && (record?.audio_path || hasPdf) && (
         <div className="lesson__media">
-          {record.audio_path && (
+          {record?.audio_path && (
             <div className="lesson__audio">
               <p className="label label--tight">Listen</p>
               {/* Points at the signing route, not at storage: the bucket is
@@ -78,29 +82,25 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
               </audio>
             </div>
           )}
-          {record.pdf_path && (
-            <a href={`/api/lesson-media?n=${n}&kind=pdf`} className="btn-secondary lesson__pdf">
-              Download the PDF
-            </a>
-          )}
+          {hasPdf &&
+            (canDownload ? (
+              <a href={`/api/lesson-media?n=${n}&kind=pdf`} className="btn-secondary lesson__pdf">
+                Download the PDF
+              </a>
+            ) : (
+              <span className="lesson__pdf-locked">
+                <span className="btn-secondary lesson__pdf" aria-disabled="true">
+                  Download the PDF
+                </span>
+                <Link href="/pro" className="lesson__pdf-note">
+                  Part of Pro →
+                </Link>
+              </span>
+            ))}
         </div>
       )}
 
-      {blocks.length > 0 && (
-        <article className="lesson__body">
-          {blocks.map((block, i) =>
-            block.kind === 'heading' ? (
-              <h2 key={i} className="lesson__heading">
-                {block.text}
-              </h2>
-            ) : (
-              <p key={i} className="lesson__paragraph">
-                {block.text}
-              </p>
-            ),
-          )}
-        </article>
-      )}
+      {readable && record && <LessonBody markdown={record.body} />}
 
       <nav className="lesson__nav" aria-label="Lessons">
         {previous ? (

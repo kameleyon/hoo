@@ -42,12 +42,21 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
   /**
-   * Reads the *saved* body, not the textarea — so unsaved edits are never
-   * silently narrated and then contradicted by what is on the page.
+   * Narration reads what is stored, so the current draft is saved first —
+   * otherwise pressing this after an edit narrates the previous version and
+   * the audio quietly disagrees with the page.
    */
   const generateNarration = async () => {
-    setStatus({ kind: 'working', message: 'Reading the lesson aloud' });
+    if (!supabase) return;
+    setStatus({ kind: 'working', message: 'Saving before reading aloud' });
     try {
+      const { error: saveError } = await supabase
+        .from('lessons')
+        .update({ body })
+        .eq('n', lesson.n);
+      if (saveError) throw new Error(saveError.message);
+
+      setStatus({ kind: 'working', message: 'Reading the lesson aloud' });
       const response = await fetch('/api/lesson-media/narrate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -154,8 +163,9 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
       <section className="section">
         <h2 className="label rule-under">The reading</h2>
         <p className="fineprint" style={{ textAlign: 'left', marginTop: 12 }}>
-          Plain text. A blank line starts a new paragraph; a line beginning with{' '}
-          <code>## </code> is a section heading. Nothing is read as HTML.
+          Markdown. <code>#</code> headings, <code>-</code> lists, <code>**bold**</code>,{' '}
+          <code>&gt;</code> quotes, links and tables all render. Raw HTML is shown as text, never
+          executed.
         </p>
         <textarea
           className="control admin__body"
