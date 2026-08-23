@@ -178,6 +178,26 @@ per name, both of which the app shows. How that total *reduces* to a single card
 is not stated anywhere in the reference, so nothing here invents one — see
 `lib/reference.ts`.
 
+## Auth email
+
+Supabase sends the auth mail — confirmation, magic link, password reset, the
+one-time code — over **Resend SMTP**, from `Haus of Oracle <auth@hausoforacle.com>`,
+using templates written in the app's own voice rather than Supabase's defaults.
+
+```bash
+npm run email:build      # regenerate supabase/templates/*.html
+npm run config:push      # send templates + SMTP settings to the project
+```
+
+Two things follow from Supabase, not this app, doing the sending:
+
+- If a confirmation or reset email stops arriving, the place to look is
+  **Supabase → Auth → SMTP**, not Vercel's environment.
+- Supabase keeps its **own copy** of the Resend key. Rotating it means running
+  `config:push` again *and* updating `RESEND_API_KEY` in Vercel — the latter is
+  for email the app sends itself (report delivery, "Email a copy"), which is a
+  separate path.
+
 ## Database
 
 Supabase (`pljmjyeftdhjvcxppxdi`). Two tables, deliberately separate:

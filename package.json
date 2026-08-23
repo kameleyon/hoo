@@ -16,7 +16,8 @@
     "auth:smoke": "node --env-file=.env.local scripts/smoke-auth.mjs",
     "config:push": "supabase config push",
     "data:reference": "node scripts/build-reference-data.mjs",
-    "data:verify": "node scripts/verify-reference.mjs"
+    "data:verify": "node scripts/verify-reference.mjs",
+    "email:build": "node scripts/build-email-templates.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

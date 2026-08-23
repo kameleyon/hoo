@@ -233,6 +233,28 @@ pass = "env(RESEND_API_KEY)"
 admin_email = "auth@hausoforacle.com"
 sender_name = "Haus of Oracle"
 
+# Auth emails in the app's own voice rather than Supabase's defaults.
+# Generated â edit scripts/build-email-templates.mjs, then `npm run email:build`.
+[auth.email.template.magic_link]
+subject = "Your link to Haus of Oracle"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Confirm your email — Haus of Oracle"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password — Haus of Oracle"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email — Haus of Oracle"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.reauthentication]
+subject = "Your confirmation code — Haus of Oracle"
+content_path = "./supabase/templates/reauthentication.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
