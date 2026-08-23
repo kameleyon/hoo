@@ -94,7 +94,7 @@ export function TodayView({ serverNow }: { serverNow: string }) {
       </div>
 
       <Link href="/learn" className="today__continue">
-        <span className="today__continue-label">Continue · {CONTINUE_LESSON.module}</span>
+        <span className="today__continue-label">Continue where you left off</span>
         <span className="today__continue-title" style={{ display: 'block' }}>
           {CONTINUE_LESSON.title}
         </span>

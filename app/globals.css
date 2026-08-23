@@ -1477,153 +1477,20 @@ ol {
    Learn
    -------------------------------------------------------------------------- */
 
-.modules {
-  padding-top: 22px;
-}
-
-@media (min-width: 1024px) {
-  .modules {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 18px;
-    padding-top: 0;
-    margin-top: 34px;
-  }
-}
-
-.module {
-  border-top: 1px solid var(--line);
-  padding: 18px 0;
-}
-
-.module:last-child {
-  border-bottom: 1px solid var(--line);
-}
-
-.module__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.module__title {
-  font-family: var(--display);
-  font-size: 25px;
-  margin-top: 5px;
-}
-
-.module__blurb {
-  font-family: var(--body);
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--muted);
-  margin-top: 6px;
-  text-wrap: pretty;
-}
-
-.module__count {
-  font-size: 11px;
-  color: var(--muted-2);
-  white-space: nowrap;
-}
-
-.module__track {
-  height: 2px;
-  background: var(--bar-idle);
-  margin-top: 14px;
-}
-
-.module__fill {
-  height: 100%;
-  background: var(--blue);
-}
-
-@media (min-width: 1024px) {
-  .module {
-    background: var(--panel);
-    border: 1px solid var(--line-panel);
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .module:last-child {
-    border-bottom: 1px solid var(--line-panel);
-  }
-
-  .module__head {
-    display: block;
-  }
-
-  .module__title {
-    font-size: 23px;
-    margin-top: 8px;
-    line-height: 1.12;
-  }
-
-  .module__blurb {
-    font-size: 14px;
-    margin-top: 8px;
-    flex: 1;
-  }
-
-  .module__count {
-    color: var(--muted-3);
-    margin-top: 14px;
-  }
-
-  .module__track {
-    margin-top: 10px;
-  }
-}
-
-.lessons__heading {
-  display: block;
-  margin-top: 26px;
-}
-
+/* Fifty rows in one run. At width they split into two columns rather than one
+   very long list — multi-column, not grid, so the numbering still reads
+   top-to-bottom (01–25, then 26–50) instead of snaking across. */
 .lessons {
   padding-top: 26px;
+  border-top: 1px solid var(--line);
+  margin-top: 30px;
 }
 
 @media (min-width: 1024px) {
-  .lessons__heading {
-    display: none;
-  }
-
   .lessons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 56px;
-    margin-top: 48px;
-    padding-top: 0;
-    align-items: start;
-  }
-}
-
-.lessons__group {
-  margin-top: 22px;
-}
-
-@media (min-width: 1024px) {
-  .lessons__group {
-    margin-top: 0;
-  }
-}
-
-.lessons__group-title {
-  font-family: var(--display);
-  font-size: 20px;
-  color: var(--ink);
-  padding-bottom: 8px;
-}
-
-@media (min-width: 1024px) {
-  .lessons__group-title {
-    font-size: 24px;
-    padding-bottom: 10px;
+    columns: 2;
+    column-gap: 56px;
+    margin-top: 40px;
   }
 }
 
@@ -1632,8 +1499,9 @@ ol {
   align-items: baseline;
   gap: 14px;
   padding: 13px 0;
-  border-top: 1px solid var(--line-faint);
+  border-bottom: 1px solid var(--line-faint);
   width: 100%;
+  break-inside: avoid;
 }
 
 .lessons__n {
