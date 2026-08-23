@@ -164,3 +164,51 @@ export interface OrderAssets {
 export function orderAssets(_session: Stripe.Checkout.Session): OrderAssets {
   return { pdfUrl: null, audioUrl: null };
 }
+
+/**
+ * How long a reading may take before the wait itself is the news.
+ *
+ * A reader cannot tell "working" from "wedged" by looking at a spinner, so
+ * after this long the page stops reassuring them and says something is wrong.
+ * Generous against the two minutes we advertise, because a slow model is not
+ * a failure and crying wolf trains people to ignore the signal.
+ */
+const LATE_AFTER_MINUTES = 10;
+
+export type OrderState =
+  /** Money has not settled. Nothing is written until it does. */
+  | 'unpaid'
+  /** Paid, no files yet, still inside the window we promised. */
+  | 'writing'
+  /** Paid and overdue. Something needs a person to look at it. */
+  | 'late'
+  /** Files exist. */
+  | 'ready';
+
+export interface OrderStatus {
+  state: OrderState;
+  /** Whole minutes since checkout, for telling the reader what we know. */
+  waitedMinutes: number;
+}
+
+/**
+ * The true state of an order, derived rather than stored.
+ *
+ * Stripe already records when the session was created and whether it was paid,
+ * and the assets either exist or do not, so there is no status column to fall
+ * out of sync with reality. The one thing this cannot do is distinguish a job
+ * that is running slowly from one that was never started, which is why 'late'
+ * says only that it is overdue and never guesses at a cause.
+ */
+export function orderStatus(session: Stripe.Checkout.Session): OrderStatus {
+  const assets = orderAssets(session);
+  const createdMs = (session.created ?? 0) * 1000;
+  const waitedMinutes = createdMs ? Math.floor((Date.now() - createdMs) / 60000) : 0;
+
+  if (assets.pdfUrl || assets.audioUrl) return { state: 'ready', waitedMinutes };
+  if (session.payment_status === 'unpaid') return { state: 'unpaid', waitedMinutes };
+  return {
+    state: waitedMinutes >= LATE_AFTER_MINUTES ? 'late' : 'writing',
+    waitedMinutes,
+  };
+}
