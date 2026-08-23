@@ -40,7 +40,10 @@ export default async function AdminLessonsPage() {
           return (
             <li key={lesson.n} className="lessons__row">
               <span className="lessons__n">{lesson.n}</span>
-              <Link href={`/admin/lessons/${lesson.n}`} className="lessons__title">
+              <Link
+                href={`/admin/lessons/${lesson.n}`}
+                className={`lessons__title${written ? ' lessons__title--ready' : ''}`}
+              >
                 {lessonTitle(lesson.n, row?.title as string | null)}
               </Link>
               <span className="admin__state" data-state={state.split(' ')[0]}>

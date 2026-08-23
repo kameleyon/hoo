@@ -122,7 +122,7 @@ export function DeckView({
           <ul className="lessons" style={{ marginTop: 0, borderTop: 0, paddingTop: 8 }}>
             {lessonHits.map((lesson) => (
               <li key={lesson.n} className="lessons__row">
-                <Link href={`/learn/${lesson.n}`} className="lessons__title">
+                <Link href={`/learn/${lesson.n}`} className="lessons__title lessons__title--ready">
                   {lesson.title}
                 </Link>
                 <span className="lessons__mins">{clock(lesson.audioSeconds) ?? 'Read'}</span>

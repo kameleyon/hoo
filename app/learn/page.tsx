@@ -41,7 +41,10 @@ export default async function LearnPage() {
           const length = clock(summary?.audioSeconds);
           return (
             <li key={lesson.n} className="lessons__row">
-              <Link href={`/learn/${lesson.n}`} className="lessons__title">
+              <Link
+                href={`/learn/${lesson.n}`}
+                className={`lessons__title${summary ? ' lessons__title--ready' : ''}`}
+              >
                 {lessonTitle(lesson.n, summary?.title)}
               </Link>
               <span className={`lessons__mins${summary ? '' : ' lessons__mins--soon'}`}>

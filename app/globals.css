@@ -1528,14 +1528,21 @@ ol {
   break-inside: avoid;
 }
 
+/* Unwritten by default: normal weight, quieter. Weight is what marks a lesson
+   as something there is actually anything to read. */
 .lessons__title {
   font-family: var(--body);
   font-size: 17px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.35;
-  color: var(--ink);
+  color: var(--muted);
   flex: 1;
   text-wrap: pretty;
+}
+
+.lessons__title--ready {
+  font-weight: 500;
+  color: var(--ink);
 }
 
 .lessons__title:hover {

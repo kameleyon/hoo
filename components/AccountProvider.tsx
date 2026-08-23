@@ -21,6 +21,7 @@ interface AccountValue {
   isSaved: (code: string) => boolean;
   toggleSaved: (code: string) => void;
   isPro: boolean;
+  isAdmin: boolean;
 }
 
 const AccountContext = createContext<AccountValue>({
@@ -32,6 +33,7 @@ const AccountContext = createContext<AccountValue>({
   isSaved: () => false,
   toggleSaved: () => {},
   isPro: false,
+  isAdmin: false,
 });
 
 /* -- local storage, used signed-out and as a cache signed-in ---------------- */
@@ -75,6 +77,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const [birthday, setBirthdayState] = useState<DayKey | null>(null);
   const [saved, setSavedState] = useState<string[]>([]);
   const [isPro, setIsPro] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [ready, setReady] = useState(false);
 
   // Kept in a ref so the auth listener can read current values without being
@@ -87,9 +90,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const pull = useCallback(async (signedIn: User) => {
     if (!supabase) return;
 
-    const [{ data: profile }, { data: pro }] = await Promise.all([
+    const [{ data: profile }, { data: pro }, { data: editor }] = await Promise.all([
       supabase.from('profiles').select('birthday, saved_cards').eq('id', signedIn.id).maybeSingle(),
       supabase.rpc('is_pro'),
+      supabase.rpc('is_admin'),
     ]);
 
     const local = localRef.current;
@@ -116,6 +120,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setBirthdayState(nextBirthday);
     setSavedState(nextSaved);
     setIsPro(pro === true);
+    setIsAdmin(editor === true);
     writeLocal(nextBirthday, nextSaved);
   }, [supabase]);
 
@@ -146,6 +151,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         await pull(signedIn);
       } else {
         setIsPro(false);
+        setIsAdmin(false);
       }
     });
 
@@ -198,8 +204,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       isSaved: (code) => saved.includes(code),
       toggleSaved,
       isPro,
+      isAdmin,
     }),
-    [user, ready, birthday, setBirthday, saved, toggleSaved, isPro],
+    [user, ready, birthday, setBirthday, saved, toggleSaved, isPro, isAdmin],
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;

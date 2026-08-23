@@ -9,7 +9,7 @@ import { useAccount } from './AccountProvider';
 import { cardForKey, cardSubtitle, formatDayKey } from '@/lib/cardology';
 
 export function YouView() {
-  const { birthday, setBirthday, ready, saved, user, isPro } = useAccount();
+  const { birthday, setBirthday, ready, saved, user, isPro, isAdmin } = useAccount();
   const [draft, setDraft] = useState('07-12');
 
   const card = birthday ? cardForKey(birthday) : null;
@@ -63,6 +63,17 @@ export function YouView() {
       tag: isPro ? 'On' : '→',
       tagClass: isPro ? ' you__row-tag--plain' : '',
     },
+    ...(isAdmin
+      ? [
+          {
+            title: 'Write lessons',
+            sub: 'Post, approve, and narrate the readings',
+            href: '/admin/lessons' as Route,
+            tag: '→',
+            tagClass: '',
+          },
+        ]
+      : []),
     {
       title: user ? 'Signed in' : 'Sign in',
       sub: user?.email ?? 'Keep your birthday and saved cards across devices',
