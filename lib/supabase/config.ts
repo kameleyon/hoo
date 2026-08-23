@@ -14,11 +14,31 @@ export interface SupabaseConfig {
   publishableKey: string;
 }
 
+let warned = false;
+
 export function supabaseConfig(): SupabaseConfig | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !publishableKey) return null;
-  return { url, publishableKey };
+
+  if (url && publishableKey) return { url, publishableKey };
+
+  // Half-configured is almost always a typo or a missing NEXT_PUBLIC_ prefix,
+  // not a deliberate choice — so say which half is missing rather than going
+  // quiet. Names only; the values are not printed.
+  if (!warned && (url || publishableKey)) {
+    warned = true;
+    const missing = [
+      url ? null : 'NEXT_PUBLIC_SUPABASE_URL',
+      publishableKey ? null : 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+    ].filter(Boolean);
+    console.error(
+      `[supabase] accounts are disabled: ${missing.join(' and ')} missing. ` +
+        'Note the NEXT_PUBLIC_ prefix — the browser cannot read an unprefixed variable, ' +
+        'and these are inlined at build time, so add them and redeploy.',
+    );
+  }
+
+  return null;
 }
 
 export function isSupabaseConfigured(): boolean {
