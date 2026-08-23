@@ -59,7 +59,7 @@ export function DeliveredView({ session }: { session: Stripe.Checkout.Session })
             Back to the report
           </Link>
         </div>
-        <OrderPoller active />
+        <OrderPoller active={state === 'unpaid'} />
       </Shell>
     );
   }
@@ -175,7 +175,7 @@ export function DeliveredView({ session }: { session: Stripe.Checkout.Session })
         </div>
       </div>
 
-      <OrderPoller active={!ready} />
+      <OrderPoller active={state === 'writing'} />
     </Shell>
   );
 }
