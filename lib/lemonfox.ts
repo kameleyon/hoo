@@ -1,4 +1,5 @@
 import 'server-only';
+import { parseBuffer } from 'music-metadata';
 import { NARRATION_VOICE } from './voices';
 import { markdownToSpeech } from './markdown-text';
 
@@ -23,8 +24,26 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface Narration {
   audio: Uint8Array;
-  /** Rough — derived from size at roughly 128 kbps, not decoded. */
-  seconds: number;
+  /** Read from the stream, or null if it could not be determined. */
+  seconds: number | null;
+}
+
+/**
+ * How long the narration actually runs.
+ *
+ * Guessing from file size needs a bitrate, and Lemonfox returns 32 kbps at
+ * 24 kHz rather than the 128 kbps a size-based guess assumes — which made an
+ * earlier estimate 42% short. `duration: true` scans the frames instead of
+ * trusting a header that may not be there.
+ */
+async function durationOf(audio: Uint8Array): Promise<number | null> {
+  try {
+    const { format } = await parseBuffer(audio, { mimeType: 'audio/mpeg' }, { duration: true });
+    return format.duration ? Math.round(format.duration) : null;
+  } catch (error) {
+    console.warn('could not read the narration duration —', error);
+    return null;
+  }
 }
 
 export async function narrate(text: string): Promise<Narration> {
@@ -51,7 +70,7 @@ export async function narrate(text: string): Promise<Narration> {
     if (response.ok) {
       const audio = new Uint8Array(await response.arrayBuffer());
       if (audio.length < 100) throw new Error('Lemonfox returned empty audio');
-      return { audio, seconds: Math.max(1, Math.round(audio.length / 16000)) };
+      return { audio, seconds: await durationOf(audio) };
     }
 
     lastError = `${response.status} ${await response.text().catch(() => '')}`.trim();

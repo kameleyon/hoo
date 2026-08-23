@@ -98,7 +98,12 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
         <div className="lesson__media">
           {record?.audio_path && (
             <div className="lesson__audio">
-              <p className="label label--tight">Listen</p>
+              <p className="label label--tight">
+                Listen
+                {record.audio_seconds
+                  ? ` · ${Math.floor(record.audio_seconds / 60)}:${String(record.audio_seconds % 60).padStart(2, '0')}`
+                  : ''}
+              </p>
               {/* Points at the signing route, not at storage: the bucket is
                   private and the link is minted per request. */}
               <audio controls preload="none" src={`/api/lesson-media?n=${n}&kind=audio`}>
