@@ -3530,6 +3530,14 @@ textarea.control {
   margin-bottom: 0;
 }
 
+.auth__code {
+  font-family: var(--display);
+  font-size: 30px;
+  letter-spacing: 0.28em;
+  text-align: center;
+  padding: 14px;
+}
+
 .auth__form .btn-primary {
   margin-top: 8px;
 }
