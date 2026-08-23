@@ -1,13 +1,7 @@
 /**
- * The narration voices, client-safe.
+ * The narration voice.
  *
- * Kept apart from lib/lemonfox.ts because that module is `server-only` — the
- * editor needs to offer this list in the browser, and importing the server
- * module to get it would drag the API client into the bundle.
+ * One voice on purpose: a course read by a different narrator each lesson is a
+ * worse course. Alloy is even, unhurried, and does not perform the prose.
  */
-export const VOICES = [
-  { id: 'river', label: 'River — female' },
-  { id: 'adam', label: 'Adam — male' },
-] as const;
-
-export type VoiceId = (typeof VOICES)[number]['id'];
+export const NARRATION_VOICE = 'alloy';

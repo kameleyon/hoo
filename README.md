@@ -193,10 +193,19 @@ Bodies are plain text, not markdown: a blank line starts a paragraph, a line
 beginning `## ` is a heading, and nothing is parsed as HTML — so there is no
 sanitiser to keep correct and no path from a lesson body to executable script.
 
-Media is never linked directly. `/api/lesson-media` checks that the lesson is
-published, and that the reader has Pro if it is a Pro lesson, then mints a
-30-minute signed URL and redirects to it. A private bucket means guessing a path
-gets you nothing.
+Media is never linked directly. `/api/lesson-media` checks access, then mints a
+30-minute signed URL and redirects to it — a private bucket means guessing a
+path gets you nothing.
+
+**Playing is free, keeping is Pro.** Streaming the narration follows the
+lesson's own access level, so a free lesson can be listened to by anyone.
+Downloading either file (`?download=1`, or any PDF request) requires a live
+subscription, and the buttons are shown disabled rather than hidden. The gate is
+on the endpoint, not just the button.
+
+Narration is Lemonfox, one voice — **Alloy** — because a course read by a
+different narrator each lesson is a worse course. The PDF is generated from the
+markdown on request, so it is never stale.
 
 ### Editing
 

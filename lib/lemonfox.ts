@@ -1,5 +1,5 @@
 import 'server-only';
-import type { VoiceId } from './voices';
+import { NARRATION_VOICE } from './voices';
 import { markdownToSpeech } from './markdown-text';
 
 /**
@@ -15,8 +15,7 @@ const MAX_ATTEMPTS = 3;
 /** Lemonfox bills per character, so a runaway body is a cost problem, not just a slow one. */
 export const MAX_INPUT_CHARS = 20000;
 
-export { VOICES } from './voices';
-export type { VoiceId } from './voices';
+export { NARRATION_VOICE } from './voices';
 
 export class LemonfoxNotConfigured extends Error {}
 
@@ -28,7 +27,7 @@ export interface Narration {
   seconds: number;
 }
 
-export async function narrate(text: string, voice: VoiceId): Promise<Narration> {
+export async function narrate(text: string): Promise<Narration> {
   const key = process.env.LEMONFOX_API_KEY;
   if (!key) throw new LemonfoxNotConfigured('LEMONFOX_API_KEY is not set');
 
@@ -46,7 +45,7 @@ export async function narrate(text: string, voice: VoiceId): Promise<Narration> 
         Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ input, voice, response_format: 'mp3' }),
+      body: JSON.stringify({ input, voice: NARRATION_VOICE, response_format: 'mp3' }),
     });
 
     if (response.ok) {

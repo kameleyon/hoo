@@ -2,8 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { lessonRecord, readerIsAdmin } from '@/lib/lesson-records';
 import { LemonfoxNotConfigured, narrate, narrationScript } from '@/lib/lemonfox';
-import { VOICES } from '@/lib/voices';
-import type { VoiceId } from '@/lib/voices';
+import { NARRATION_VOICE } from '@/lib/voices';
 
 const BUCKET = 'lesson-media';
 
@@ -19,7 +18,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'not found' }, { status: 404 });
   }
 
-  let payload: { n?: string; voice?: string };
+  let payload: { n?: string };
   try {
     payload = await request.json();
   } catch {
@@ -31,10 +30,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'unknown lesson' }, { status: 400 });
   }
 
-  const voice: VoiceId = VOICES.some((v) => v.id === payload.voice)
-    ? (payload.voice as VoiceId)
-    : 'river';
-
   const lesson = await lessonRecord(n);
   if (!lesson) return NextResponse.json({ error: 'unknown lesson' }, { status: 404 });
 
@@ -44,7 +39,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { audio, seconds } = await narrate(script, voice);
+    const { audio, seconds } = await narrate(script);
     const path = `lessons/${n}/audio.mp3`;
 
     const { error: uploadError } = await supabaseAdmin()
@@ -60,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     if (linkError) throw new Error(`could not attach the audio: ${linkError.message}`);
 
-    return NextResponse.json({ path, seconds, characters: script.length, voice });
+    return NextResponse.json({ path, seconds, characters: script.length, voice: NARRATION_VOICE });
   } catch (error) {
     if (error instanceof LemonfoxNotConfigured) {
       console.error(error.message);

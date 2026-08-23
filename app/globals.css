@@ -3281,15 +3281,16 @@ textarea.control {
   margin-top: 20px;
 }
 
-/* The PDF is Pro. Show the control, plainly out of reach. */
-.lesson__pdf-locked {
+/* Downloads are Pro. Show the controls, plainly out of reach. */
+.lesson__keep {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   flex: none;
 }
 
-.lesson__pdf-locked .lesson__pdf {
+.lesson__keep [aria-disabled='true'] {
   color: var(--muted-3);
   border-color: var(--line);
   cursor: not-allowed;

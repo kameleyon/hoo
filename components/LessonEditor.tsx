@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSupabase } from './SupabaseProvider';
-import { VOICES } from '@/lib/voices';
 
 const BUCKET = 'lesson-media';
 
@@ -38,7 +37,6 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
   const [published, setPublished] = useState(lesson.published);
   const [audioPath, setAudioPath] = useState(lesson.audio_path);
   const [pdfPath, setPdfPath] = useState(lesson.pdf_path);
-  const [voice, setVoice] = useState<string>(VOICES[0].id);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
   /**
@@ -60,7 +58,7 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
       const response = await fetch('/api/lesson-media/narrate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ n: lesson.n, voice }),
+        body: JSON.stringify({ n: lesson.n }),
       });
       const data: { path?: string; seconds?: number; characters?: number; error?: string } =
         await response.json();
@@ -184,19 +182,6 @@ export function LessonEditor({ lesson }: { lesson: EditableLesson }) {
             <p className="label label--tight">Narration</p>
             <p className="admin__file-name">{audioPath ?? 'Nothing uploaded'}</p>
             <div className="admin__row" style={{ marginTop: 10 }}>
-              <select
-                className="control"
-                style={{ width: 190 }}
-                value={voice}
-                onChange={(e) => setVoice(e.target.value)}
-                aria-label="Narration voice"
-              >
-                {VOICES.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.label}
-                  </option>
-                ))}
-              </select>
               <button
                 type="button"
                 className="btn-secondary"

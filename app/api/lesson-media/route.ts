@@ -10,15 +10,19 @@ const LINK_SECONDS = 60 * 30;
 /**
  * A lesson's audio or PDF.
  *
- * Audio follows the lesson's own access level. The PDF is Pro either way — it
- * is the thing a reader keeps, so it is the thing worth subscribing for — and
- * is generated from the markdown on request unless a file has been uploaded to
- * stand in for it.
+ * Playing is one thing, keeping is another. Streaming the narration follows the
+ * lesson's own access level, so a free lesson can be listened to by anyone;
+ * *downloading* either file is Pro, because the file is the thing worth
+ * subscribing for. `?download=1` asks for the keepable version.
+ *
+ * The PDF is generated from the markdown on request unless a file has been
+ * uploaded to stand in for it.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const n = searchParams.get('n') ?? '';
   const kind = searchParams.get('kind');
+  const wantsDownload = searchParams.get('download') === '1';
 
   if (!/^(0[1-9]|[1-4][0-9]|50)$/.test(n) || (kind !== 'audio' && kind !== 'pdf')) {
     return NextResponse.json({ error: 'bad request' }, { status: 400 });
@@ -62,16 +66,19 @@ export async function GET(request: NextRequest) {
   if (lesson.access === 'pro' && !isPro) {
     return NextResponse.json({ error: 'this lesson needs Pro' }, { status: 403 });
   }
+  if (wantsDownload && !isPro) {
+    return NextResponse.json({ error: 'keeping the audio is part of Pro' }, { status: 403 });
+  }
   if (!lesson.audio_path) {
     return NextResponse.json({ error: 'nothing uploaded yet' }, { status: 404 });
   }
-  return signed(lesson.audio_path, n, 'audio');
+  return signed(lesson.audio_path, n, 'audio', wantsDownload);
 }
 
-async function signed(path: string, n: string, kind: string) {
+async function signed(path: string, n: string, kind: string, download = kind === 'pdf') {
   const { data, error } = await supabaseAdmin()
     .storage.from(BUCKET)
-    .createSignedUrl(path, LINK_SECONDS, kind === 'pdf' ? { download: true } : undefined);
+    .createSignedUrl(path, LINK_SECONDS, download ? { download: true } : undefined);
 
   if (error || !data?.signedUrl) {
     console.error(`could not sign ${kind} for lesson ${n} —`, error?.message);

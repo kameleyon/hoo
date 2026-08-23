@@ -79,6 +79,12 @@ try {
     });
     check('a reader without Pro cannot download the PDF', res.status === 403, `HTTP ${res.status}`);
 
+    const dl = await fetch(`${base}/api/lesson-media?n=01&kind=audio&download=1`, {
+      headers: { cookie: reader.cookies },
+      redirect: 'manual',
+    });
+    check('nor keep the audio', dl.status === 403 || dl.status === 404, `HTTP ${dl.status}`);
+
     const html = await fetch(`${base}/learn/01`, { headers: { cookie: reader.cookies } }).then((r) =>
       r.text(),
     );

@@ -82,21 +82,41 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
               </audio>
             </div>
           )}
-          {hasPdf &&
-            (canDownload ? (
-              <a href={`/api/lesson-media?n=${n}&kind=pdf`} className="btn-secondary lesson__pdf">
-                Download the PDF
-              </a>
+          <div className="lesson__keep">
+            {canDownload ? (
+              <>
+                {record?.audio_path && (
+                  <a
+                    href={`/api/lesson-media?n=${n}&kind=audio&download=1`}
+                    className="btn-secondary lesson__pdf"
+                  >
+                    Download the audio
+                  </a>
+                )}
+                {hasPdf && (
+                  <a href={`/api/lesson-media?n=${n}&kind=pdf`} className="btn-secondary lesson__pdf">
+                    Download the PDF
+                  </a>
+                )}
+              </>
             ) : (
-              <span className="lesson__pdf-locked">
-                <span className="btn-secondary lesson__pdf" aria-disabled="true">
-                  Download the PDF
-                </span>
+              <>
+                {record?.audio_path && (
+                  <span className="btn-secondary lesson__pdf" aria-disabled="true">
+                    Download the audio
+                  </span>
+                )}
+                {hasPdf && (
+                  <span className="btn-secondary lesson__pdf" aria-disabled="true">
+                    Download the PDF
+                  </span>
+                )}
                 <Link href="/pro" className="lesson__pdf-note">
-                  Part of Pro →
+                  Keeping the files is part of Pro →
                 </Link>
-              </span>
-            ))}
+              </>
+            )}
+          </div>
         </div>
       )}
 
