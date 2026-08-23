@@ -9,6 +9,14 @@ import { cardForKey } from '@/lib/cardology';
 import { readWord } from '@/lib/reference';
 import { FIELD_PLACEHOLDER, priceFor } from '@/lib/reports';
 import type { ReportDefinition } from '@/lib/reports';
+
+interface QuickReading {
+  a: { name: string; code: string };
+  b: { name: string; code: string };
+  categories: { name: string; score: number }[];
+  overall: number;
+  hook: string;
+}
 import type { DayKey } from '@/lib/types';
 
 /** Where each date field starts before the reader touches it. */
@@ -24,6 +32,8 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quick, setQuick] = useState<QuickReading | null>(null);
+  const [checking, setChecking] = useState(false);
 
   // "Your birthday" starts from the saved one when there is one.
   const valueFor = (key: string, kind: string): string => {
@@ -39,8 +49,37 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
   const price = priceFor(report, isPro);
   const discounted = price !== report.price;
 
-  const set = (key: string, value: string) =>
+  // Changing a birthday invalidates any scores on screen, so they go rather
+  // than sit there attached to dates nobody entered.
+  const set = (key: string, value: string) => {
+    setQuick(null);
     setOverrides((prev) => ({ ...prev, [key]: value }));
+  };
+
+  /**
+   * The free half: nine percentages from the two birthdays, no payment and no
+   * model call. It answers "are we compatible" with a number and leaves "why"
+   * for the reading, which is the part that costs money.
+   */
+  const checkFree = async () => {
+    if (checking) return;
+    setChecking(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/love/quick', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ a: valueFor('a', 'date'), b: valueFor('b', 'date') }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'unavailable');
+      setQuick(data as QuickReading);
+    } catch {
+      setError('We could not work those out. Please check both dates and try again.');
+    } finally {
+      setChecking(false);
+    }
+  };
 
   /**
    * Hands off to Stripe Checkout. The price is never sent from here — the
@@ -159,6 +198,39 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
               );
             })}
           </div>
+
+          {quick && (
+            <section className="quick" aria-live="polite">
+              <h2 className="label label--wide rule-under">
+                {quick.a.name} and {quick.b.name}
+              </h2>
+
+              <ul className="quick__list">
+                {quick.categories.map((c) => (
+                  <li key={c.name} className="quick__row">
+                    <span className="quick__name">{c.name}</span>
+                    <span className="quick__bar">
+                      <span className="quick__fill" style={{ width: c.score + '%' }} />
+                    </span>
+                    <span className="quick__pct">{c.score}%</span>
+                  </li>
+                ))}
+                <li className="quick__row quick__row--total">
+                  <span className="quick__name">Overall</span>
+                  <span className="quick__bar">
+                    <span className="quick__fill" style={{ width: quick.overall + '%' }} />
+                  </span>
+                  <span className="quick__pct">{quick.overall}%</span>
+                </li>
+              </ul>
+
+              <p className="quick__hook">{quick.hook}</p>
+              <p className="fineprint">
+                The numbers are free and always will be. What they mean, where the friction
+                actually sits, and what to do about it is the reading.
+              </p>
+            </section>
+          )}
         </div>
 
         <aside className="builder__summary">
@@ -180,6 +252,17 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
             <span>{submitting ? 'Opening checkout' : 'Generate report'}</span>
             <span className="btn-primary__price">{price}</span>
           </button>
+
+          {report.id === 'love' && (
+            <button
+              type="button"
+              className="btn-secondary btn-secondary--full"
+              onClick={checkFree}
+              disabled={checking}
+            >
+              {checking ? 'Working them out' : quick ? 'Recalculate' : 'See the percentages free'}
+            </button>
+          )}
           {error ? (
             <p className="fineprint fineprint--error" role="alert">
               {error}

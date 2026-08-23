@@ -3655,3 +3655,92 @@ textarea.control {
     opacity: 0.55;
   }
 }
+
+/* --- the free percentages ------------------------------------------------ */
+
+.quick {
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.quick__list {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.quick__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick__name {
+  font-size: 12px;
+  color: var(--ink-soft);
+  min-width: 0;
+}
+
+.quick__bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bar-idle);
+  overflow: hidden;
+}
+
+.quick__fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--blue);
+}
+
+.quick__pct {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: right;
+}
+
+/* The average carries the weight, so it reads as the answer, not another row. */
+.quick__row--total {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-faint);
+}
+
+.quick__row--total .quick__name,
+.quick__row--total .quick__pct {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.quick__hook {
+  margin-top: 20px;
+  font-family: var(--body);
+  color: var(--ink-body);
+  font-size: 17px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* A secondary button that sits under a full-width primary matches its width. */
+.btn-secondary--full {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Nine rows of label plus bar plus number will not fit a phone; the bar goes. */
+@media (max-width: 560px) {
+  .quick__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .quick__bar {
+    display: none;
+  }
+}
