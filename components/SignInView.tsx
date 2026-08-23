@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { supabaseBrowser } from '@/lib/supabase/client';
+import { useSupabase } from './SupabaseProvider';
 
 type Stage = 'asking' | 'sending' | 'sent';
 
@@ -14,16 +14,16 @@ type Stage = 'asking' | 'sending' | 'sent';
  * gate in front of the deck.
  */
 export function SignInView({ next }: { next: string }) {
+  const supabase = useSupabase();
   const [email, setEmail] = useState('');
   const [stage, setStage] = useState<Stage>('asking');
   const [error, setError] = useState<string | null>(null);
 
   const send = async () => {
-    if (stage === 'sending' || !email.trim()) return;
+    if (stage === 'sending' || !email.trim() || !supabase) return;
     setStage('sending');
     setError(null);
 
-    const supabase = supabaseBrowser();
     const { error: sendError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {

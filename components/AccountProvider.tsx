@@ -3,8 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { supabaseBrowser } from '@/lib/supabase/client';
-import { isSupabaseConfigured } from '@/lib/supabase/config';
+import { useSupabase } from './SupabaseProvider';
 import { parseDayKey } from '@/lib/cardology';
 import { BY_CODE } from '@/lib/card-index';
 import type { DayKey } from '@/lib/types';
@@ -71,6 +70,7 @@ function writeLocal(birthday: DayKey | null, saved: string[]): void {
  * the same saved cards follow them to another device.
  */
 export function AccountProvider({ children }: { children: ReactNode }) {
+  const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
   const [birthday, setBirthdayState] = useState<DayKey | null>(null);
   const [saved, setSavedState] = useState<string[]>([]);
@@ -85,7 +85,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   });
 
   const pull = useCallback(async (signedIn: User) => {
-    const supabase = supabaseBrowser();
+    if (!supabase) return;
 
     const [{ data: profile }, { data: pro }] = await Promise.all([
       supabase.from('profiles').select('birthday, saved_cards').eq('id', signedIn.id).maybeSingle(),
@@ -117,7 +117,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setSavedState(nextSaved);
     setIsPro(pro === true);
     writeLocal(nextBirthday, nextSaved);
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     const local = readLocal();
@@ -127,12 +127,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     // No Supabase on this deployment: everything still works, it just stays on
     // this device.
-    if (!isSupabaseConfigured()) {
+    if (!supabase) {
       setReady(true);
       return;
     }
-
-    const supabase = supabaseBrowser();
 
     supabase.auth.getUser().then(async ({ data }) => {
       const signedIn = data.user ?? null;
@@ -152,19 +150,19 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.subscription.unsubscribe();
-  }, [pull]);
+  }, [pull, supabase]);
 
   const persist = useCallback(
     (nextBirthday: DayKey | null, nextSaved: string[]) => {
       localRef.current = { birthday: nextBirthday, saved: nextSaved };
       writeLocal(nextBirthday, nextSaved);
-      if (!user || !isSupabaseConfigured()) return;
-      void supabaseBrowser()
+      if (!user || !supabase) return;
+      void supabase
         .from('profiles')
         .update({ birthday: nextBirthday, saved_cards: nextSaved })
         .eq('id', user.id);
     },
-    [user],
+    [user, supabase],
   );
 
   const setBirthday = useCallback(
