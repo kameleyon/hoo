@@ -6,6 +6,31 @@ import { LessonBody } from '@/components/LessonBody';
 import { readingMinutes } from '@/lib/markdown-text';
 import { lessonRecord, readerIsAdmin, readerIsPro } from '@/lib/lesson-records';
 
+
+/** A download arrow over a sound wave. */
+function AudioIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+      strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3v9" />
+      <path d="m8.5 8.5 3.5 3.5 3.5-3.5" />
+      <path d="M4 16v2M8 14.5v5M12 16v2M16 14.5v5M20 16v2" />
+    </svg>
+  );
+}
+
+/** A download arrow over a page. */
+function PdfIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+      strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3v8" />
+      <path d="m8.5 7.5 3.5 3.5 3.5-3.5" />
+      <path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14" />
+    </svg>
+  );
+}
+
 export const dynamic = 'force-dynamic';
 
 function lessonByNumber(n: string) {
@@ -83,38 +108,44 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
             </div>
           )}
           <div className="lesson__keep">
-            {canDownload ? (
-              <>
-                {record?.audio_path && (
-                  <a
-                    href={`/api/lesson-media?n=${n}&kind=audio&download=1`}
-                    className="btn-secondary lesson__pdf"
-                  >
-                    Download the audio
-                  </a>
-                )}
-                {hasPdf && (
-                  <a href={`/api/lesson-media?n=${n}&kind=pdf`} className="btn-secondary lesson__pdf">
-                    Download the PDF
-                  </a>
-                )}
-              </>
-            ) : (
-              <>
-                {record?.audio_path && (
-                  <span className="btn-secondary lesson__pdf" aria-disabled="true">
-                    Download the audio
-                  </span>
-                )}
-                {hasPdf && (
-                  <span className="btn-secondary lesson__pdf" aria-disabled="true">
-                    Download the PDF
-                  </span>
-                )}
-                <Link href="/pro" className="lesson__pdf-note">
-                  Keeping the files is part of Pro →
-                </Link>
-              </>
+            {record?.audio_path &&
+              (canDownload ? (
+                <a
+                  href={`/api/lesson-media?n=${n}&kind=audio&download=1`}
+                  className="lesson__keep-button"
+                  title="Download the audio"
+                >
+                  <AudioIcon />
+                  <span className="visually-hidden">Download the audio</span>
+                </a>
+              ) : (
+                <span className="lesson__keep-button" aria-disabled="true" title="Downloading is part of Pro">
+                  <AudioIcon />
+                  <span className="visually-hidden">Download the audio — part of Pro</span>
+                </span>
+              ))}
+
+            {hasPdf &&
+              (canDownload ? (
+                <a
+                  href={`/api/lesson-media?n=${n}&kind=pdf`}
+                  className="lesson__keep-button"
+                  title="Download the PDF"
+                >
+                  <PdfIcon />
+                  <span className="visually-hidden">Download the PDF</span>
+                </a>
+              ) : (
+                <span className="lesson__keep-button" aria-disabled="true" title="Downloading is part of Pro">
+                  <PdfIcon />
+                  <span className="visually-hidden">Download the PDF — part of Pro</span>
+                </span>
+              ))}
+
+            {!canDownload && (
+              <Link href="/pro" className="lesson__pdf-note">
+                Pro
+              </Link>
             )}
           </div>
         </div>
