@@ -178,6 +178,44 @@ per name, both of which the app shows. How that total *reduces* to a single card
 is not stated anywhere in the reference, so nothing here invents one — see
 `lib/reference.ts`.
 
+## Lessons
+
+The fifty titles live in `lib/lessons.ts` — they are the shape of the course.
+The **content** lives in Supabase, because it is written and rewritten without a
+deploy:
+
+| Where | What |
+| --- | --- |
+| `public.lessons` | body, access level, published flag, media paths |
+| `lesson-media` bucket | narration and PDF, **private** |
+
+Bodies are plain text, not markdown: a blank line starts a paragraph, a line
+beginning `## ` is a heading, and nothing is parsed as HTML — so there is no
+sanitiser to keep correct and no path from a lesson body to executable script.
+
+Media is never linked directly. `/api/lesson-media` checks that the lesson is
+published, and that the reader has Pro if it is a Pro lesson, then mints a
+30-minute signed URL and redirects to it. A private bucket means guessing a path
+gets you nothing.
+
+### Editing
+
+`/admin/lessons` — write the reading, upload the audio and PDF, set free or Pro,
+publish. Uploads go **straight from the browser to Storage**, not through a
+Vercel function, because a narration can exceed the 100 MB request limit.
+
+Editors are marked by `profiles.is_admin`, which nothing in the app can set: the
+reader's own UPDATE policy is restricted to their row, and a trigger refuses any
+change to that column. The only way in is with the secret key:
+
+```bash
+npm run grant:admin -- you@example.com     # sign in once first
+npm run grant:admin -- you@example.com --revoke
+```
+
+To anyone who is not an editor, `/admin/lessons` returns 404 rather than a
+redirect — an editor-only area should not confirm that it exists.
+
 ## Auth email
 
 Supabase sends the auth mail — confirmation, magic link, password reset, the
