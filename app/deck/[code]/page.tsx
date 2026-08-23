@@ -4,13 +4,13 @@ import { notFound } from 'next/navigation';
 import { CardFace } from '@/components/CardFace';
 import { SaveCardButton } from '@/components/SaveCardButton';
 import { CARDS, CARD_BY_CODE, studySections } from '@/lib/cards';
-import { birthdaysFor, cardSubtitle } from '@/lib/cardology';
+import { JOKER, birthdaysFor, cardSubtitle } from '@/lib/cardology';
 import { isCrown, planetaryPosition } from '@/lib/reference';
 
 /** All fifty-two studies are static — they never change and they are the pages
  *  worth having in a search index. */
 export function generateStaticParams() {
-  return CARDS.map((c) => ({ code: c.code }));
+  return [...CARDS.map((c) => ({ code: c.code })), { code: JOKER.code }];
 }
 
 export async function generateMetadata({
@@ -19,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ code: string }>;
 }): Promise<Metadata> {
   const { code } = await params;
-  const card = CARD_BY_CODE[code];
+  const card = code === JOKER.code ? JOKER : CARD_BY_CODE[code];
   if (!card) return {};
   return {
     title: card.name,
@@ -30,13 +30,19 @@ export async function generateMetadata({
 
 export default async function CardStudyPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const card = CARD_BY_CODE[code];
+
+  // The Joker is not one of the fifty-two, so it has no study — but it is dealt
+  // to a real date and people look for it. Give it its own page rather than a 404.
+  const joker = code === JOKER.code;
+  const card = joker ? JOKER : CARD_BY_CODE[code];
   if (!card) notFound();
 
-  const sections = studySections(card);
-  const birthdays = birthdaysFor(card.name);
+  const sections = joker
+    ? [{ label: 'The card', body: JOKER.desc }]
+    : studySections(CARD_BY_CODE[code]);
+  const birthdays = joker ? ['Dec 31'] : birthdaysFor(card.name);
 
-  const position = planetaryPosition(card.code);
+  const position = joker ? null : planetaryPosition(card.code);
   const meta = [
     { label: 'Planet', value: card.planet || '—' },
     {
@@ -90,7 +96,7 @@ export default async function CardStudyPage({ params }: { params: Promise<{ code
             </ul>
           )}
 
-          <SaveCardButton code={card.code} name={card.name} />
+          {!joker && <SaveCardButton code={card.code} name={card.name} />}
         </div>
 
         <div className="study__main">
@@ -101,7 +107,7 @@ export default async function CardStudyPage({ params }: { params: Promise<{ code
             </section>
           ))}
 
-          {card.archBullets.length > 0 && (
+          {!joker && card.archBullets.length > 0 && (
             <section className="section study__section">
               <h2 className="label label--wide rule-under">The archetype</h2>
               <ul className="study__bullets">

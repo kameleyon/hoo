@@ -37,21 +37,34 @@ export async function lessonRecord(n: string): Promise<LessonRecord | null> {
   return (data as LessonRecord | null) ?? null;
 }
 
-/** Which lessons have something to read, for marking up the list. */
-export async function publishedLessonNumbers(): Promise<Set<string>> {
-  if (!supabaseConfig()) return new Set();
+export interface LessonSummary {
+  n: string;
+  audioSeconds: number | null;
+}
+
+/**
+ * The lessons that are actually readable, with how long the narration runs.
+ * Keyed by number so the list can mark up the fifty titles it already has.
+ */
+export async function publishedLessons(): Promise<Map<string, LessonSummary>> {
+  if (!supabaseConfig()) return new Map();
 
   const supabase = await supabaseServer();
   const { data, error } = await supabase
     .from('lessons')
-    .select('n')
+    .select('n, audio_seconds')
     .not('published_at', 'is', null);
 
   if (error) {
     console.error('could not list published lessons —', error.message);
-    return new Set();
+    return new Map();
   }
-  return new Set((data ?? []).map((row) => row.n as string));
+  return new Map(
+    (data ?? []).map((row) => [
+      row.n as string,
+      { n: row.n as string, audioSeconds: (row.audio_seconds as number | null) ?? null },
+    ]),
+  );
 }
 
 /** Whether the signed-in reader currently has Pro. False when signed out. */

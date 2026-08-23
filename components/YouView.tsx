@@ -58,7 +58,7 @@ export function YouView() {
     },
     {
       title: 'Haus of Oracle Pro',
-      sub: isPro ? 'Subscribed' : 'Not subscribed',
+      sub: isPro ? 'Everything unlocked' : 'Not subscribed',
       href: '/pro',
       tag: isPro ? 'On' : '→',
       tagClass: isPro ? ' you__row-tag--plain' : '',

@@ -12,6 +12,9 @@ interface DeckFilterValue {
   setQ: (q: string) => void;
   suit: SuitFilter;
   setSuit: (s: SuitFilter) => void;
+  /** False until the URL has been read, so the deck can render the server's
+   *  answer rather than briefly showing everything. */
+  hydrated: boolean;
 }
 
 const DeckFilterContext = createContext<DeckFilterValue>({
@@ -19,6 +22,7 @@ const DeckFilterContext = createContext<DeckFilterValue>({
   setQ: () => {},
   suit: 'All',
   setSuit: () => {},
+  hydrated: false,
 });
 
 const SUIT_VALUES: SuitFilter[] = ['All', 'Hearts', 'Clubs', 'Diamonds', 'Spades'];
@@ -55,7 +59,7 @@ export function DeckFilterProvider({ children }: { children: ReactNode }) {
     window.history.replaceState(null, '', search ? `/deck?${search}` : '/deck');
   }, [q, suit, pathname, hydrated]);
 
-  const value = useMemo(() => ({ q, setQ, suit, setSuit }), [q, suit]);
+  const value = useMemo(() => ({ q, setQ, suit, setSuit, hydrated }), [q, suit, hydrated]);
 
   return <DeckFilterContext.Provider value={value}>{children}</DeckFilterContext.Provider>;
 }

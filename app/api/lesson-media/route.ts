@@ -10,10 +10,9 @@ const LINK_SECONDS = 60 * 30;
 /**
  * A lesson's audio or PDF.
  *
- * Playing is one thing, keeping is another. Streaming the narration follows the
- * lesson's own access level, so a free lesson can be listened to by anyone;
- * *downloading* either file is Pro, because the file is the thing worth
- * subscribing for. `?download=1` asks for the keepable version.
+ * Both are Pro. The reading itself is free — the page, the words, the whole
+ * lesson — but the narration and the PDF are what a subscription buys, so
+ * playing is gated as tightly as keeping.
  *
  * The PDF is generated from the markdown on request unless a file has been
  * uploaded to stand in for it.
@@ -63,11 +62,8 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  if (lesson.access === 'pro' && !isPro) {
-    return NextResponse.json({ error: 'this lesson needs Pro' }, { status: 403 });
-  }
-  if (wantsDownload && !isPro) {
-    return NextResponse.json({ error: 'keeping the audio is part of Pro' }, { status: 403 });
+  if (!isPro) {
+    return NextResponse.json({ error: 'the narration is part of Pro' }, { status: 403 });
   }
   if (!lesson.audio_path) {
     return NextResponse.json({ error: 'nothing uploaded yet' }, { status: 404 });

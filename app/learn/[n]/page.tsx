@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { LESSONS } from '@/lib/lessons';
 import { LessonBody } from '@/components/LessonBody';
 import { readingMinutes } from '@/lib/markdown-text';
+import { clock } from '@/lib/duration';
 import { lessonRecord, readerIsAdmin, readerIsPro } from '@/lib/lesson-records';
 
 
@@ -100,16 +101,21 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
             <div className="lesson__audio">
               <p className="label label--tight">
                 Listen
-                {record.audio_seconds
-                  ? ` · ${Math.floor(record.audio_seconds / 60)}:${String(record.audio_seconds % 60).padStart(2, '0')}`
-                  : ''}
+                {clock(record.audio_seconds) ? ` · ${clock(record.audio_seconds)}` : ''}
               </p>
-              {/* Points at the signing route, not at storage: the bucket is
-                  private and the link is minted per request. */}
-              <audio controls preload="none" src={`/api/lesson-media?n=${n}&kind=audio`}>
-                Your browser cannot play audio.{' '}
-                <a href={`/api/lesson-media?n=${n}&kind=audio`}>Download the narration</a>.
-              </audio>
+              {canDownload ? (
+                /* Points at the signing route, not at storage: the bucket is
+                   private and the link is minted per request. */
+                <audio controls preload="none" src={`/api/lesson-media?n=${n}&kind=audio`}>
+                  Your browser cannot play audio.{' '}
+                  <a href={`/api/lesson-media?n=${n}&kind=audio`}>Download the narration</a>.
+                </audio>
+              ) : (
+                <p className="lesson__audio-locked">
+                  The narration is read by Haus of Oracle for subscribers. The lesson itself stays
+                  free to read.
+                </p>
+              )}
             </div>
           )}
           <div className="lesson__keep">
