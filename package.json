@@ -20,7 +20,8 @@
     "email:build": "node scripts/build-email-templates.mjs",
     "grant:admin": "node --env-file=.env.local scripts/grant-admin.mjs",
     "lessons:check": "node scripts/check-lessons.mjs",
-    "data:archetypes": "node scripts/build-archetypes.mjs"
+    "data:archetypes": "node scripts/build-archetypes.mjs",
+    "data:calendar": "node scripts/verify-calendar.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.7.0",
