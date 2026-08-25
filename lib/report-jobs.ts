@@ -5,7 +5,7 @@ import { supabaseAdmin } from './supabase/admin';
 import { compatibilityBrief } from './love-brief';
 import { writeLoveReport } from './writer';
 import { documentPdf } from './lesson-pdf';
-import { narrate, narrationScript } from './lemonfox';
+import { narrateLong, narrationScript } from './lemonfox';
 import { reportById } from './reports';
 
 /**
@@ -165,7 +165,7 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
     let audioPath = job.audio_path;
     let seconds = job.audio_seconds;
     if (!audioPath) {
-      const narration = await narrate(narrationScript(markdown));
+      const narration = await narrateLong(narrationScript(markdown));
       audioPath = `${job.session_id}/reading.mp3`;
       const { error } = await db.storage
         .from(BUCKET)

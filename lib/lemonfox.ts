@@ -84,6 +84,78 @@ export async function narrate(text: string): Promise<Narration> {
 }
 
 /**
+ * Splits a script into pieces the API will accept, at the largest natural
+ * boundary that fits.
+ *
+ * Paragraphs first, because a break between them is inaudible. Only a single
+ * paragraph too big to send on its own falls back to sentences, and only a
+ * sentence too big for that gets cut on length, which no real reading reaches.
+ */
+function chunk(text: string, limit: number): string[] {
+  const out: string[] = [];
+  let current = '';
+
+  const push = (piece: string) => {
+    if (!piece.trim()) return;
+    if (current && current.length + piece.length + 2 > limit) {
+      out.push(current.trim());
+      current = '';
+    }
+    current = current ? `${current}\n\n${piece}` : piece;
+  };
+
+  for (const para of text.split(/\n{2,}/)) {
+    if (para.length <= limit) {
+      push(para);
+      continue;
+    }
+    let sentence = '';
+    for (const part of para.split(/(?<=[.!?])\s+/)) {
+      if (sentence.length + part.length + 1 > limit) {
+        push(sentence);
+        sentence = '';
+      }
+      sentence = sentence ? `${sentence} ${part}` : part;
+    }
+    push(sentence);
+  }
+
+  if (current.trim()) out.push(current.trim());
+  return out;
+}
+
+/**
+ * Narrates a script of any length.
+ *
+ * A reading outgrew the single-request limit the moment it went from two
+ * thousand words to four, so this sends it in pieces and joins the audio. MP3
+ * frames are self-contained, so concatenating the responses produces one
+ * playable file, and the duration is measured from the joined result rather
+ * than summed, which keeps it honest about what a listener actually gets.
+ */
+export async function narrateLong(text: string): Promise<Narration> {
+  const pieces = chunk(text.trim(), MAX_INPUT_CHARS);
+  if (pieces.length === 0) throw new Error('nothing to narrate');
+  if (pieces.length === 1) return narrate(pieces[0]);
+
+  console.log(`narrating in ${pieces.length} parts`);
+  const parts: Uint8Array[] = [];
+  for (const piece of pieces) {
+    parts.push((await narrate(piece)).audio);
+  }
+
+  const total = parts.reduce((n, p) => n + p.length, 0);
+  const audio = new Uint8Array(total);
+  let at = 0;
+  for (const p of parts) {
+    audio.set(p, at);
+    at += p.length;
+  }
+
+  return { audio, seconds: await durationOf(audio) };
+}
+
+/**
  * What actually gets read aloud.
  *
  * Lessons are markdown, and a voice given markdown says "hash hash" and
