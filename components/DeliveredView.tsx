@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type Stripe from 'stripe';
 import { OrderPoller } from './OrderPoller';
+import { ReadingAudio } from './ReadingAudio';
 import { orderAssets, orderStatus } from '@/lib/fulfilment';
 import { documentNames, reportById } from '@/lib/reports';
 
@@ -82,47 +83,26 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
           )}
         </div>
 
-        {state === 'writing' && (
-          <div className="writing-banner" role="status" aria-live="polite">
-            <span className="writing-banner__dots" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
-            <div>
-              <p className="writing-banner__title">Your reading is being written now</p>
-              <p className="writing-banner__body">
-                It takes about ninety seconds: the reading is written, typeset, then read aloud.
-                This page updates itself, so you can leave it open or come back to it. Nothing
-                else is needed from you.
-              </p>
-            </div>
-          </div>
-        )}
-
         <div className="delivered__files">
           <div className="delivered__file">
             <div className="filerow">
               <div className="filerow__pdf">PDF</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="filerow__name">{doc.pdfName}</p>
-                {ready && <p className="filerow__sub">{report.pages}</p>}
+                {ready ? (
+                  <p className="filerow__sub">Ready to download</p>
+                ) : (
+                  <span className="loading" role="status" aria-label="Writing the reading">
+                    <span className="loading__sweep" />
+                  </span>
+                )}
               </div>
               {assets.pdfUrl ? (
                 <a href={assets.pdfUrl} download className="filerow__action">
                   Download
                 </a>
               ) : (
-                <span className="filerow__action filerow__action--idle">
-                  <span className="working">
-                    Writing
-                    <span className="working__dots" aria-hidden="true">
-                      <i />
-                      <i />
-                      <i />
-                    </span>
-                  </span>
-                </span>
+                <span className="filerow__action filerow__action--idle">Writing</span>
               )}
             </div>
           </div>
@@ -130,35 +110,34 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
           <div className="delivered__divider" />
 
           <div className="delivered__file">
-            <div className="filerow">
-              {assets.audioUrl ? (
-                <a href={assets.audioUrl} className="filerow__play" aria-label="Play the narration">
-                  ▶
-                </a>
-              ) : (
+            {assets.audioUrl && assets.audioDownloadUrl ? (
+              <ReadingAudio
+                src={assets.audioUrl}
+                downloadSrc={assets.audioDownloadUrl}
+                seconds={assets.seconds}
+              />
+            ) : (
+              <div className="filerow">
                 <span className="filerow__play filerow__play--idle" aria-hidden="true">
                   ▶
                 </span>
-              )}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p className="filerow__name">{doc.mp3Name}</p>
-                <div className="filerow__track">
-                  <div className={ready ? 'filerow__fill' : 'filerow__fill filerow__fill--idle'} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="filerow__name">{doc.mp3Name}</p>
+                  <span className="loading" role="status" aria-label="Recording the narration">
+                    <span className="loading__sweep" />
+                  </span>
                 </div>
-              </div>
-              {ready && (
                 <span className="filerow__sub" style={{ flex: 'none', marginTop: 0 }}>
-                  {assets.seconds ? `${Math.round(assets.seconds / 60)} min` : doc.mp3Len}
+                  Recording
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
         {state === 'writing' && (
           <p className="fineprint" style={{ textAlign: 'left', marginTop: 16 }} aria-live="polite">
-            {report.turn}. This page updates itself, so you can leave it open.
-            {email ? ` Both files go to ${email} as soon as they exist.` : ''}
+            Usually ready in a minute or two. This page updates itself.
           </p>
         )}
 

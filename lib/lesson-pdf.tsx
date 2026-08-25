@@ -27,21 +27,21 @@ const styles = StyleSheet.create({
   wordmark: { fontFamily: 'Helvetica', fontSize: 8, letterSpacing: 2, color: '#3A4658' },
   eyebrow: { fontFamily: 'Helvetica', fontSize: 8, letterSpacing: 1.6, color: MUTED, marginBottom: 8 },
   title: { fontFamily: 'Times-Roman', fontSize: 30, color: INK, marginBottom: 22, lineHeight: 1.15 },
-  h2: { fontFamily: 'Times-Roman', fontSize: 17, color: INK, marginTop: 22, marginBottom: 8 },
-  h3: { fontFamily: 'Times-Bold', fontSize: 12, color: INK, marginTop: 16, marginBottom: 6 },
-  p: { fontFamily: 'Times-Roman', fontSize: 11.5, lineHeight: 1.65, color: BODY, marginBottom: 11 },
-  li: { fontFamily: 'Times-Roman', fontSize: 11.5, lineHeight: 1.6, color: BODY, marginBottom: 6, paddingLeft: 14 },
+  h2: { fontFamily: 'Times-Roman', fontSize: 18, color: INK, marginTop: 26, marginBottom: 10 },
+  h3: { fontFamily: 'Times-Bold', fontSize: 13, color: INK, marginTop: 18, marginBottom: 7 },
+  p: { fontFamily: 'Times-Roman', fontSize: 12.5, lineHeight: 1.75, color: BODY, marginBottom: 13 },
+  li: { fontFamily: 'Times-Roman', fontSize: 12.5, lineHeight: 1.7, color: BODY, marginBottom: 8, paddingLeft: 14 },
   quote: {
-    fontFamily: 'Times-Italic', fontSize: 11.5, lineHeight: 1.6, color: MUTED,
+    fontFamily: 'Times-Italic', fontSize: 12.5, lineHeight: 1.7, color: MUTED,
     marginBottom: 11, paddingLeft: 14, borderLeftWidth: 1, borderLeftColor: LINE,
   },
   rule: { borderBottomWidth: 1, borderBottomColor: LINE, marginVertical: 16 },
   scoreRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: '#EDEAE4',
+    paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: '#EDEAE4',
   },
-  scoreName: { fontFamily: 'Times-Roman', fontSize: 12, color: BODY },
-  scorePct: { fontFamily: 'Times-Bold', fontSize: 12, color: INK },
+  scoreName: { fontFamily: 'Times-Roman', fontSize: 13, color: BODY },
+  scorePct: { fontFamily: 'Times-Bold', fontSize: 13, color: INK },
   scoreTotalRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingTop: 12, marginTop: 6, borderTopWidth: 1, borderTopColor: LINE,
@@ -198,6 +198,7 @@ export async function documentPdf({
               ))}
             </View>
             {summary ? <Text style={{ ...styles.p, marginTop: 20 }}>{summary}</Text> : null}
+            <View break />
           </>
         ) : null}
 

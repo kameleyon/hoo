@@ -3760,65 +3760,145 @@ textarea.control {
   font-weight: 600;
 }
 
-/* --- "is anything actually happening?" ------------------------------------ */
+/* --- work in progress, shown rather than described ----------------------- */
 
 /*
- * A chip inside a file row is too quiet to answer that question, and it was
- * the first thing readers asked. This says the same thing loudly, states how
- * long it takes, and says explicitly that nothing is required of them.
+ * A bar with a light sweeping across it. It sits where the file's own details
+ * will appear, so the row visibly becomes the finished thing rather than
+ * swapping one label for another. Readers skip prose; they do not skip motion.
  */
-.writing-banner {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  padding: 16px 18px;
-  border: 1px solid var(--line-panel);
-  border-radius: 4px;
-  background: var(--panel);
+.loading {
+  display: block;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--bar-idle);
+  overflow: hidden;
 }
 
-.writing-banner__dots {
-  display: inline-flex;
-  gap: 4px;
-  padding-top: 7px;
-  flex: none;
+.loading__sweep {
+  display: block;
+  height: 100%;
+  width: 40%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  animation: loading-sweep 1.6s ease-in-out infinite;
 }
 
-.writing-banner__dots i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--blue);
-  opacity: 0.25;
-  animation: working-dot 1.4s ease-in-out infinite;
-}
-
-.writing-banner__dots i:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.writing-banner__dots i:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-.writing-banner__title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 5px;
-}
-
-.writing-banner__body {
-  font-family: var(--body);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--ink-body);
+@keyframes loading-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .writing-banner__dots i {
+  .loading__sweep {
     animation: none;
-    opacity: 0.55;
+    width: 100%;
+    background: var(--blue-line);
   }
+}
+
+/* --- the narration, played in place -------------------------------------- */
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.player__button {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--silver);
+  color: var(--blue);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player__button:hover {
+  background: var(--blue);
+  color: var(--white);
+}
+
+.player__spinner {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--blue-line);
+  border-top-color: var(--blue);
+  animation: player-spin 0.7s linear infinite;
+}
+
+@keyframes player-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.player__middle {
+  flex: 1;
+  min-width: 0;
+}
+
+/* A range input styled down to a track, so seeking works with a keyboard. */
+.player__scrub {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bar-idle);
+  cursor: pointer;
+}
+
+.player__scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+
+.player__scrub::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--blue);
+}
+
+.player__times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.player__download {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.player__download:hover {
+  border-color: var(--blue);
+  color: var(--blue);
 }

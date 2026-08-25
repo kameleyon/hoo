@@ -161,6 +161,8 @@ export async function entitlementFromInvoice(
 export interface OrderAssets {
   pdfUrl: string | null;
   audioUrl: string | null;
+  /** Same file, asked for as a download rather than a stream. */
+  audioDownloadUrl: string | null;
   /** The narration's true running time, once it exists. */
   seconds: number | null;
 }
@@ -175,12 +177,14 @@ export interface OrderAssets {
  */
 export async function orderAssets(session: Stripe.Checkout.Session): Promise<OrderAssets> {
   const job = await jobFor(session.id);
-  if (!job || job.status !== 'ready') return { pdfUrl: null, audioUrl: null, seconds: null };
+  if (!job || job.status !== 'ready')
+    return { pdfUrl: null, audioUrl: null, audioDownloadUrl: null, seconds: null };
 
   const base = `/api/reports/media?session=${encodeURIComponent(session.id)}`;
   return {
     pdfUrl: job.pdf_path ? `${base}&kind=pdf` : null,
     audioUrl: job.audio_path ? `${base}&kind=audio` : null,
+    audioDownloadUrl: job.audio_path ? `${base}&kind=audio&download=1` : null,
     seconds: job.audio_seconds,
   };
 }

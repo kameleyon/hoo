@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const sessionId = searchParams.get('session') ?? '';
   const kind = searchParams.get('kind');
+  const wantsDownload = searchParams.get('download') === '1';
 
   if (!sessionId.startsWith('cs_') || (kind !== 'audio' && kind !== 'pdf')) {
     return NextResponse.json({ error: 'bad request' }, { status: 400 });
@@ -39,9 +40,14 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin()
     .storage.from(BUCKET)
-    // The PDF is something to keep, so it downloads; the narration is
-    // something to play, so it streams.
-    .createSignedUrl(path, LINK_SECONDS, kind === 'pdf' ? { download: true } : undefined);
+    // The PDF is something to keep, so it always downloads. The narration
+    // streams by default because the page plays it inline, and only downloads
+    // when the reader actually asks for the file.
+    .createSignedUrl(
+      path,
+      LINK_SECONDS,
+      kind === 'pdf' || wantsDownload ? { download: true } : undefined,
+    );
 
   if (error || !data?.signedUrl) {
     console.error(`could not sign ${kind} for ${sessionId} —`, error?.message);
