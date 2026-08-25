@@ -3744,3 +3744,81 @@ textarea.control {
     display: none;
   }
 }
+
+/* The composite card leads the free view: it is the strongest thing we can
+   give away, because knowing the card raises the question the reading answers. */
+.quick__composite {
+  margin-top: 14px;
+  font-family: var(--body);
+  color: var(--ink-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.quick__composite strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* --- "is anything actually happening?" ------------------------------------ */
+
+/*
+ * A chip inside a file row is too quiet to answer that question, and it was
+ * the first thing readers asked. This says the same thing loudly, states how
+ * long it takes, and says explicitly that nothing is required of them.
+ */
+.writing-banner {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--line-panel);
+  border-radius: 4px;
+  background: var(--panel);
+}
+
+.writing-banner__dots {
+  display: inline-flex;
+  gap: 4px;
+  padding-top: 7px;
+  flex: none;
+}
+
+.writing-banner__dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--blue);
+  opacity: 0.25;
+  animation: working-dot 1.4s ease-in-out infinite;
+}
+
+.writing-banner__dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.writing-banner__dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.writing-banner__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+
+.writing-banner__body {
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .writing-banner__dots i {
+    animation: none;
+    opacity: 0.55;
+  }
+}

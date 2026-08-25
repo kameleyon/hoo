@@ -36,6 +36,18 @@ const styles = StyleSheet.create({
     marginBottom: 11, paddingLeft: 14, borderLeftWidth: 1, borderLeftColor: LINE,
   },
   rule: { borderBottomWidth: 1, borderBottomColor: LINE, marginVertical: 16 },
+  scoreRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: '#EDEAE4',
+  },
+  scoreName: { fontFamily: 'Times-Roman', fontSize: 12, color: BODY },
+  scorePct: { fontFamily: 'Times-Bold', fontSize: 12, color: INK },
+  scoreTotalRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingTop: 12, marginTop: 6, borderTopWidth: 1, borderTopColor: LINE,
+  },
+  scoreTotalName: { fontFamily: 'Times-Bold', fontSize: 13, color: INK },
+  scoreTotalPct: { fontFamily: 'Times-Bold', fontSize: 15, color: INK },
   footer: {
     position: 'absolute', bottom: 32, left: 64, right: 64,
     fontFamily: 'Helvetica', fontSize: 8, color: '#9A978F',
@@ -148,10 +160,19 @@ export async function documentPdf({
   title,
   markdown,
   eyebrow = 'A LESSON',
+  scores,
+  summary,
 }: {
   title: string;
   markdown: string;
   eyebrow?: string;
+  /**
+   * Rendered from the numbers themselves rather than from the written text, so
+   * the page a reader checks cannot disagree with what was calculated. The
+   * model retells these in prose; only this is authoritative.
+   */
+  scores?: { name: string; score: number }[];
+  summary?: string;
 }): Promise<Buffer> {
   const mark = markDataUri();
 
@@ -165,6 +186,20 @@ export async function documentPdf({
 
         <Text style={styles.eyebrow}>{eyebrow}</Text>
         <Text style={styles.title}>{title}</Text>
+
+        {scores?.length ? (
+          <>
+            <View>
+              {scores.map((s) => (
+                <View key={s.name} style={styles.scoreRow}>
+                  <Text style={styles.scoreName}>{s.name}</Text>
+                  <Text style={styles.scorePct}>{s.score}%</Text>
+                </View>
+              ))}
+            </View>
+            {summary ? <Text style={{ ...styles.p, marginTop: 20 }}>{summary}</Text> : null}
+          </>
+        ) : null}
 
         {blocks(markdown)}
 

@@ -80,6 +80,124 @@ export function chartOf(code: string): Map<string, string> {
   return seats;
 }
 
+/**
+ * The deck in perfect order: Ace to King, Hearts, Clubs, Diamonds, Spades.
+ * The source calls this the Pure Spread, and it is the solar order.
+ */
+const PURE: string[] = [...solar].sort((x, y) => x.value - y.value).map((x) => x.code);
+
+/**
+ * The layout step the source calls a quadration, recovered rather than quoted.
+ *
+ * The procedure is not written down in anything we hold, but both of its ends
+ * are: it turns the Pure Spread into the Life Spread, and both are known. So
+ * the permutation between them is simply read off, and the proof that it is
+ * the right one is that repeating it returns to the Pure Spread after exactly
+ * ninety steps, which is what the source says happens. See
+ * scripts/verify-ages.mjs.
+ */
+const QUADRATION: number[] = (() => {
+  const where = new Map(PURE.map((c, i) => [c, i]));
+  return SEQUENCE.map((c) => where.get(c) ?? 0);
+})();
+
+/**
+ * The ninety Age Spreads. Age 0 is the Life Spread, Age 89 the Pure Spread,
+ * and a life longer than that starts over.
+ */
+const AGE_SPREADS: string[][] = (() => {
+  const out: string[][] = [];
+  let seq = PURE;
+  for (let n = 0; n < 90; n++) {
+    seq = QUADRATION.map((from) => seq[from]);
+    out.push(seq);
+  }
+  return out;
+})();
+
+/** Where a card's thirteen seats fall in a given year of life. */
+function chartAt(code: string, age: number): Map<string, string> {
+  const spreadAt = AGE_SPREADS[((age % 90) + 90) % 90];
+  const start = spreadAt.indexOf(code);
+  const seats = new Map<string, string>();
+  if (start === -1) return seats;
+  for (let i = 0; i < CHART_SIZE; i++) {
+    seats.set(spreadAt[(start + i) % 52], SEATS[i]);
+  }
+  return seats;
+}
+
+/**
+ * What it means for one card to be sitting in another's seat.
+ *
+ * Drawn from the planetary meanings the spread itself carries: Venus and
+ * Jupiter are where a relationship is given something, Saturn and Neptune
+ * where it is charged for something. Mars is not bad, it is loud, so it counts
+ * against a quiet year and not against the pairing.
+ */
+const SEAT_WEIGHT: Record<string, number> = {
+  Sun: 2,
+  Venus: 3,
+  Jupiter: 3,
+  Mercury: 1,
+  Moon: 1,
+  Earth: 1,
+  Bacchus: 1,
+  Vulcan: 0,
+  Pluto: -1,
+  Mars: -1,
+  Uranus: -1,
+  Saturn: -2,
+  Neptune: -2,
+};
+
+export interface AgeWindow {
+  age: number;
+  /** The seat B holds in A's chart that year, and the reverse. */
+  bInA: string | null;
+  aInB: string | null;
+  weight: number;
+}
+
+/**
+ * The years when these two are easiest on each other, and the years they are
+ * hardest, worked out from where each card sits in the other's chart as the
+ * spreads turn.
+ *
+ * Ages with no contact at all are left out rather than scored zero: nothing
+ * seated either way is an absence of information, not a neutral year.
+ */
+export function ageWindows(a: string, b: string): { best: AgeWindow[]; worst: AgeWindow[] } {
+  const scored: AgeWindow[] = [];
+
+  for (let age = 0; age < 90; age++) {
+    const bInA = chartAt(a, age).get(b) ?? null;
+    const aInB = chartAt(b, age).get(a) ?? null;
+    if (!bInA && !aInB) continue;
+    const weight = (bInA ? (SEAT_WEIGHT[bInA] ?? 0) : 0) + (aInB ? (SEAT_WEIGHT[aInB] ?? 0) : 0);
+    scored.push({ age, bInA, aInB, weight });
+  }
+
+  const byWeight = [...scored].sort((x, y) => y.weight - x.weight || x.age - y.age);
+  return {
+    best: byWeight.filter((w) => w.weight > 0).slice(0, 6),
+    worst: [...byWeight].reverse().filter((w) => w.weight < 0).slice(0, 6),
+  };
+}
+
+/**
+ * Whether either person's Venus card is the other person. The source treats
+ * this as one of the strongest attraction placements there is, so it is worth
+ * naming on its own rather than folding into the general seat list.
+ */
+export function venusTie(a: string, b: string): { aVenusIsB: boolean; bVenusIsA: boolean } {
+  const venusOf = (code: string) => {
+    for (const [card, seat] of chartOf(code)) if (seat === 'Venus') return card;
+    return null;
+  };
+  return { aVenusIsB: venusOf(a) === b, bVenusIsA: venusOf(b) === a };
+}
+
 export type LinkDirection = 'mutual' | 'a-in-b' | 'b-in-a' | 'none';
 
 export interface Link {
@@ -264,6 +382,9 @@ export interface LoveReading {
   suited: boolean;
   categories: CategoryScore[];
   overall: number;
+  /** Years of life these two are easiest, and hardest, on each other. */
+  ages: ReturnType<typeof ageWindows>;
+  venus: ReturnType<typeof venusTie>;
   /** One line, written to make someone want the rest. */
   hook: string;
 }
@@ -289,6 +410,8 @@ export function readLove(aKey: DayKey, bKey: DayKey): LoveReading | null {
   if (link.direction === 'mutual') structural += 20;
   else if (link.direction !== 'none') structural += 12;
   if (spark.match) structural += 15;
+  const venus = venusTie(ca.code, cb.code);
+  if (venus.aVenusIsB || venus.bVenusIsA) structural += 12;
   structural += contacts.shared.length * 8;
   if (suited) structural += 10;
   if (echo.length) structural += 4;
@@ -319,6 +442,8 @@ export function readLove(aKey: DayKey, bKey: DayKey): LoveReading | null {
     suited,
     categories,
     overall,
+    ages: ageWindows(ca.code, cb.code),
+    venus: venusTie(ca.code, cb.code),
     hook: hookFor(overall, link, spark.match, ca.name, cb.name),
   };
 }

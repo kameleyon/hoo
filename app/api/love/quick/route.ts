@@ -41,6 +41,10 @@ export async function POST(request: Request) {
   return NextResponse.json({
     a: { name: reading.a.name, code: reading.a.code },
     b: { name: reading.b.name, code: reading.b.code },
+    // The composite is given away deliberately. Naming the card the pairing
+    // makes is a sharper hook than any percentage, and it cannot be acted on
+    // without the reading that explains it.
+    composite: reading.compositeName,
     categories: reading.categories,
     overall: reading.overall,
     hook: reading.hook,

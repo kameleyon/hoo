@@ -13,6 +13,7 @@ import type { ReportDefinition } from '@/lib/reports';
 interface QuickReading {
   a: { name: string; code: string };
   b: { name: string; code: string };
+  composite: string | null;
   categories: { name: string; score: number }[];
   overall: number;
   hook: string;
@@ -205,6 +206,13 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
                 {quick.a.name} and {quick.b.name}
               </h2>
 
+              {quick.composite && (
+                <p className="quick__composite">
+                  Together they make the <strong>{quick.composite}</strong>. That card is the
+                  relationship itself, and it runs the whole dynamic.
+                </p>
+              )}
+
               <ul className="quick__list">
                 {quick.categories.map((c) => (
                   <li key={c.name} className="quick__row">
@@ -225,10 +233,6 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
               </ul>
 
               <p className="quick__hook">{quick.hook}</p>
-              <p className="fineprint">
-                The numbers are free and always will be. What they mean, where the friction
-                actually sits, and what to do about it is the reading.
-              </p>
             </section>
           )}
         </div>

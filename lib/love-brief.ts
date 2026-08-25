@@ -127,6 +127,47 @@ export function compatibilityBrief(aKey: DayKey, bKey: DayKey): { brief: string;
           .join(', ')}`
       : `Any card that appears as a companion in both charts: ${NA}`,
     '',
+    "## How Each Card Sits In The Other's Chart",
+    // The seat one card holds in the other's chart is the most concrete thing
+    // in the whole reading: it is a fixed placement with a stated meaning, and
+    // it is what the reader recognises when they see it described.
+    reading.link.bSeat
+      ? `B (${reading.b.name}) holds the ${reading.link.bSeat} seat in A's chart.`
+      : `B (${reading.b.name}) holds no seat in A's chart.`,
+    reading.link.aSeat
+      ? `A (${reading.a.name}) holds the ${reading.link.aSeat} seat in B's chart.`
+      : `A (${reading.a.name}) holds no seat in B's chart.`,
+    reading.link.aSeat || reading.link.bSeat
+      ? 'Explain what that placement does day to day, in plain language. A seat is a permanent placement, so this is a standing condition of the relationship, not a phase.'
+      : 'Neither sits in the other. Say what that absence means: nothing about this pairing is automatic, and whatever it becomes has to be built deliberately.',
+    '',
+    '## Venus Placement',
+    reading.venus.aVenusIsB || reading.venus.bVenusIsA
+      ? [
+          reading.venus.aVenusIsB ? `${reading.b.name} is ${reading.a.name}'s Venus card.` : null,
+          reading.venus.bVenusIsA ? `${reading.a.name} is ${reading.b.name}'s Venus card.` : null,
+          'This is one of the strongest attraction placements there is. Say so plainly.',
+        ]
+          .filter(Boolean)
+          .join('\n')
+      : "Neither card is the other's Venus card. Omit this topic entirely; do not mention Venus placement at all.",
+    '',
+    '## Ages That Favour Them, And Ages That Do Not',
+    'These are years of life, not calendar years, and they apply to whichever',
+    'person is that age. Write about them as seasons of the relationship.',
+    reading.ages.best.length
+      ? 'Best ages: ' +
+        reading.ages.best
+          .map((w) => `${w.age} (${[w.bInA && `B at A's ${w.bInA}`, w.aInB && `A at B's ${w.aInB}`].filter(Boolean).join(', ')})`)
+          .join('; ')
+      : 'Best ages: not available',
+    reading.ages.worst.length
+      ? 'Hardest ages: ' +
+        reading.ages.worst
+          .map((w) => `${w.age} (${[w.bInA && `B at A's ${w.bInA}`, w.aInB && `A at B's ${w.aInB}`].filter(Boolean).join(', ')})`)
+          .join('; ')
+      : 'Hardest ages: not available',
+    '',
     '## Instructions for missing data',
     // Section 2 of the prompt asks for a quote per person. None of the
     // source's quotes were ever digitised, and a required section with no data

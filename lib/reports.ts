@@ -53,8 +53,11 @@ export const REPORTS: ReportDefinition[] = [
     pages: '18 pages',
     audio: '14 min narration',
     turn: 'Ready in about two minutes',
-    pdfLine: 'An 18-page PDF, yours to download and keep',
-    audioLine: 'A 14-minute narration you can listen to offline',
+    // Length varies with the pairing, so the copy no longer names a number it
+    // cannot keep. The real page count and running time are shown on the order
+    // once the files exist and are known.
+    pdfLine: 'A full PDF, yours to download and keep',
+    audioLine: 'A narration you can listen to offline',
     inside:
       'The reading opens with each card on its own, then reads them against each other — where they agree, where one keeps asking the other for something it cannot give, and what the pattern has already cost. It closes with the part you can actually act on.',
     fields: [field('a', 'date', 'Your birthday'), field('b', 'date', 'Their birthday')],

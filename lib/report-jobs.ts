@@ -123,12 +123,16 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
     const b = session.metadata?.f_b;
     if (!a || !b) throw new Error('the order is missing its birthdays');
 
+    // Recomputed every time rather than stored: it is pure arithmetic over the
+    // two dates, so it cannot drift, and the PDF needs the numbers even on a
+    // retry where the words already exist.
+    const built = compatibilityBrief(a, b);
+    if (!built) throw new Error('could not read those two dates');
+
     // 1. The words. Reused on a retry so a narration failure does not pay for
     //    the writing twice.
     let markdown = job.markdown;
     if (!markdown) {
-      const built = compatibilityBrief(a, b);
-      if (!built) throw new Error('could not read those two dates');
       const written = await writeLoveReport(built.brief);
       markdown = written.markdown;
       await db.from('report_jobs').update({ markdown }).eq('session_id', job.session_id);
@@ -139,7 +143,15 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
     // 2. The PDF.
     let pdfPath = job.pdf_path;
     if (!pdfPath) {
-      const pdf = await documentPdf({ title, markdown, eyebrow: 'A READING' });
+      const pdf = await documentPdf({
+        title,
+        markdown,
+        eyebrow: 'A READING',
+        scores: [
+          ...built.reading.categories,
+          { name: 'Overall', score: built.reading.overall },
+        ],
+      });
       pdfPath = `${job.session_id}/reading.pdf`;
       const { error } = await db.storage
         .from(BUCKET)

@@ -82,6 +82,24 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
           )}
         </div>
 
+        {state === 'writing' && (
+          <div className="writing-banner" role="status" aria-live="polite">
+            <span className="writing-banner__dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <div>
+              <p className="writing-banner__title">Your reading is being written now</p>
+              <p className="writing-banner__body">
+                It takes about ninety seconds: the reading is written, typeset, then read aloud.
+                This page updates itself, so you can leave it open or come back to it. Nothing
+                else is needed from you.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="delivered__files">
           <div className="delivered__file">
             <div className="filerow">

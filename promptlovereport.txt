@@ -150,7 +150,16 @@ Never show this formula, these point values, or the word "baseline" to the reade
 
 # Report Structure
 
-Target total length: **2,000 to 2,200 words.**
+Target total length: **3,000 to 4,000 words.** Anything shorter than 3,000 is too thin to sell. Write to the upper end of every section's range rather than the lower.
+
+## 0. The Opening Page (this comes FIRST, before anything else)
+
+Open with the scorecard and nothing else, so the first page stands alone:
+
+* All nine categories, each as a bolded name and its number, one per line, in the order given.
+* Then a short summary of 120 to 180 words, in the report's voice, saying what the numbers add up to and naming the single thing this pairing most has to watch.
+
+No card interpretation on this page. No preamble. The numbers, then the summary, then a page break.
 
 ## 1. Title and Subtitle
 
@@ -198,6 +207,27 @@ Introduce with one sentence stating the scale (0 to 100, baseline is generous, a
 ## 11. What To Actually Do With This (80 to 120 words)
 
 Concrete, specific, non-generic advice drawn directly from each person's stated shadow pattern. Not "communicate more." Name exactly what each person needs to say and when.
+
+## 11a. The Composite Card As The Governing Dynamic (200 to 300 words)
+
+The Composite Card is the relationship itself, not a footnote to the two people. Give it its own treatment: what this pairing behaves like as a single unit, what it is good at that neither person is good at alone, and what it does badly that neither would do alone. Name the card repeatedly. This is the section a reader should quote back.
+
+## 11b. How Each Sits In The Other's Chart (200 to 300 words)
+
+Use the seat placements supplied. If one card holds a seat in the other's chart, name that seat and explain concretely what it produces day to day: what one person keeps triggering in the other without meaning to, and what it feels like from both sides. If neither holds a seat, say that plainly and explain what has to be built deliberately as a result.
+
+## 11c. Timing: When This Works And When It Does Not (250 to 350 words)
+
+Use the ages supplied. These are ages, not calendar years, and they apply to whichever person is that age. Write them as seasons: what tends to be available in the favourable years, and what tends to go wrong in the difficult ones. Be specific about what changes, not just that something changes. Never present an age as a prediction of events; present it as a description of the weather.
+
+## 11d. Avoid And Encourage (250 to 350 words)
+
+Two plain lists, each introduced by a sentence and each item a full sentence.
+
+* **Absolutely avoid**: five to seven things, drawn from the two shadow expressions and the Composite Card's shadow. Each must be a behaviour, not a feeling.
+* **Actively encourage**: five to seven things, drawn from the two uplifted expressions and the Composite Card's uplifted expression.
+
+No generic advice. Every item must only make sense for these two cards.
 
 ## 12. The Verdict (100 to 150 words)
 
