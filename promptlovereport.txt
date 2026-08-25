@@ -152,14 +152,18 @@ Never show this formula, these point values, or the word "baseline" to the reade
 
 Target total length: **3,000 to 4,000 words.** Anything shorter than 3,000 is too thin to sell. Write to the upper end of every section's range rather than the lower.
 
-## 0. The Opening Page (this comes FIRST, before anything else)
+## 0. The Opening Summary (this comes FIRST, before anything else)
 
-Open with the scorecard and nothing else, so the first page stands alone:
+The nine percentages are printed above this by the layout, from the calculated
+figures. **Do not list them again here.** Repeating them produces the same
+table twice on the same page.
 
-* All nine categories, each as a bolded name and its number, one per line, in the order given.
-* Then a short summary of 120 to 180 words, in the report's voice, saying what the numbers add up to and naming the single thing this pairing most has to watch.
+Write only a short summary of 150 to 220 words, in the report's voice, that
+says what the numbers add up to and names the single thing this pairing most
+has to watch. You may refer to individual figures inside sentences ("the 90 in
+Partnership is doing a lot of work here"), but never as a list.
 
-No card interpretation on this page. No preamble. The numbers, then the summary, then a page break.
+No heading. No card interpretation yet. No preamble. Just the summary.
 
 ## 1. Title and Subtitle
 
