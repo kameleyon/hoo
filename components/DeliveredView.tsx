@@ -137,7 +137,8 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
 
         {state === 'writing' && (
           <p className="fineprint" style={{ textAlign: 'left', marginTop: 16 }} aria-live="polite">
-            Usually ready in a minute or two. This page updates itself.
+            Usually ready in a minute or two. This page updates itself, and
+            {email ? ` we will email ${email} the moment it is.` : ' we will email you the moment it is.'}
           </p>
         )}
 

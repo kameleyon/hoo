@@ -7,6 +7,8 @@ import { writeLoveReport } from './writer';
 import { documentPdf } from './lesson-pdf';
 import { narrateLong, narrationScript } from './lemonfox';
 import { reportById } from './reports';
+import { readyEmail, send } from './mail';
+import { siteUrl } from './site';
 
 /**
  * Turning a paid order into files.
@@ -37,6 +39,7 @@ export interface ReportJob {
   audio_path: string | null;
   audio_seconds: number | null;
   error: string | null;
+  emailed_at: string | null;
   updated_at: string;
 }
 
@@ -180,8 +183,57 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
       .eq('session_id', job.session_id);
 
     console.log(`report ${job.session_id} ready`);
+
+    await notify(job.session_id, report.title, session);
   } catch (error) {
     await fail(job.session_id, attempts, error);
+  }
+}
+
+/**
+ * Tells the reader their reading exists.
+ *
+ * Stamped before the send rather than after, and only from a row that has not
+ * been stamped already, so two workers finishing the same job cannot both post
+ * a message. Losing an email to a crash between the stamp and the send is a
+ * far smaller harm than sending the same one twice, and the reader still has
+ * the page.
+ *
+ * A failure here never fails the job: the files exist and the order page shows
+ * them. This is a courtesy on top of a delivery that has already happened.
+ */
+async function notify(
+  sessionId: string,
+  reportTitle: string,
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  const to = session.customer_details?.email;
+  if (!to) return;
+
+  const { data } = await supabaseAdmin()
+    .from('report_jobs')
+    .update({ emailed_at: new Date().toISOString() })
+    .eq('session_id', sessionId)
+    .is('emailed_at', null)
+    .select('session_id');
+
+  if (!data?.length) return; // someone else already sent it
+
+  try {
+    const mail = readyEmail(
+      reportTitle,
+      `${siteUrl()}/orders/${sessionId}`,
+      'Your reading has been written, typeset and read aloud. Both files are waiting on the page.',
+    );
+    await send({ to, ...mail });
+    console.log(`emailed ${sessionId}`);
+  } catch (error) {
+    // Put the stamp back so a retry can try again.
+    await supabaseAdmin()
+      .from('report_jobs')
+      .update({ emailed_at: null })
+      .eq('session_id', sessionId);
+    console.error(`could not email ${sessionId} —`, error);
   }
 }
 
