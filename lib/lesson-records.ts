@@ -43,6 +43,8 @@ export interface LessonSummary {
   n: string;
   title: string | null;
   audioSeconds: number | null;
+  /** So the list can say a lesson is Pro before someone clicks into it. */
+  access: 'free' | 'pro';
 }
 
 /**
@@ -55,7 +57,7 @@ export async function publishedLessons(): Promise<Map<string, LessonSummary>> {
   const supabase = await supabaseServer();
   const { data, error } = await supabase
     .from('lessons')
-    .select('n, title, audio_seconds')
+    .select('n, title, audio_seconds, access')
     .not('published_at', 'is', null);
 
   if (error) {
@@ -69,6 +71,7 @@ export async function publishedLessons(): Promise<Map<string, LessonSummary>> {
         n: row.n as string,
         title: (row.title as string | null) ?? null,
         audioSeconds: (row.audio_seconds as number | null) ?? null,
+        access: ((row.access as string) === 'pro' ? 'pro' : 'free') as 'free' | 'pro',
       },
     ]),
   );

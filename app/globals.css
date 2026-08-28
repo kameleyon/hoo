@@ -393,15 +393,29 @@ ol {
   outline: none;
 }
 
+/*
+ * Filled rather than outlined. As a hairline pill in blue-on-cream it read as
+ * a label, so readers never learned there was anything to buy. Same palette,
+ * inverted, which is the smallest change that makes it look like a way in.
+ */
 .pill-pro {
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--blue);
-  border: 1px solid var(--blue-line);
+  font-weight: 600;
+  color: var(--on-dark);
+  background: var(--blue);
+  border: 1px solid var(--blue);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 8px 15px;
   flex: none;
+  transition: background 0.15s ease;
+}
+
+.pill-pro:hover {
+  color: var(--on-dark);
+  background: var(--ink);
+  border-color: var(--ink);
 }
 
 .view {
@@ -3900,5 +3914,56 @@ textarea.control {
 
 .player__download:hover {
   border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* --- a locked reading ----------------------------------------------------- */
+
+/*
+ * The old gate was a line of grey text and readers walked straight past it.
+ * A panel with a lock and a real button reads as a door rather than a footnote,
+ * which is the difference between "this is missing" and "this is available".
+ */
+.locked {
+  margin-top: 22px;
+  padding: 22px 24px;
+  border: 1px solid var(--blue-line);
+  border-radius: 5px;
+  background: var(--silver);
+}
+
+.locked__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 10px;
+}
+
+.locked__body {
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-body);
+  margin-bottom: 18px;
+  max-width: 46ch;
+}
+
+.locked__cta {
+  display: inline-flex;
+}
+
+/* The Pro marker in the lesson list, so the lock is known before the click. */
+.lessons__pro {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--blue);
 }

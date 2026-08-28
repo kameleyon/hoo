@@ -88,12 +88,19 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
       )}
 
       {locked && (
-        <>
-          <p className="empty-note">This reading is part of Pro.</p>
-          <Link href="/pro" className="set-birthday">
-            See what Pro includes →
+        <div className="locked">
+          <p className="locked__tag">
+            <span aria-hidden="true">&#128274;</span>
+            Part of Pro
+          </p>
+          <p className="locked__body">
+            This reading is written and waiting. Pro opens every lesson, the narration for each
+            one, and the PDF to keep.
+          </p>
+          <Link href="/pro" className="btn-dark locked__cta">
+            See what Pro includes
           </Link>
-        </>
+        </div>
       )}
 
       {published && !locked && (record?.audio_path || hasPdf) && (

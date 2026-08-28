@@ -47,9 +47,16 @@ export default async function LearnPage() {
               >
                 {lessonTitle(lesson.n, summary?.title)}
               </Link>
-              <span className={`lessons__mins${summary ? '' : ' lessons__mins--soon'}`}>
-                {summary ? (length ?? 'Read') : 'Soon'}
-              </span>
+              {summary?.access === 'pro' ? (
+                <span className="lessons__pro" title="Part of Pro">
+                  <span aria-hidden="true">&#128274;</span>
+                  Pro
+                </span>
+              ) : (
+                <span className={`lessons__mins${summary ? '' : ' lessons__mins--soon'}`}>
+                  {summary ? (length ?? 'Read') : 'Soon'}
+                </span>
+              )}
             </li>
           );
         })}
