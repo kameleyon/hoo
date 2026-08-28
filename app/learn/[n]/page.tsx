@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Lock } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { LESSONS, lessonTitle } from '@/lib/lessons';
 import { LessonBody } from '@/components/LessonBody';
@@ -90,7 +91,7 @@ export default async function LessonPage({ params }: { params: Promise<{ n: stri
       {locked && (
         <div className="locked">
           <p className="locked__tag">
-            <span aria-hidden="true">&#128274;</span>
+            <Lock size={12} strokeWidth={1.75} aria-hidden="true" />
             Part of Pro
           </p>
           <p className="locked__body">

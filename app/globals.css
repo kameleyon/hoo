@@ -3965,5 +3965,12 @@ textarea.control {
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--blue);
+  /* Muted, not blue: in the list a lock states a fact about the row rather
+     than asking to be clicked, and a column of blue would pull the eye off
+     the titles. */
+  color: var(--muted-3);
+}
+
+.lessons__pro svg {
+  opacity: 0.75;
 }

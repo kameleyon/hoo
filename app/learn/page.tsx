@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Lock } from 'lucide-react';
 import { LESSONS, LESSON_COUNT_WORD, lessonTitle } from '@/lib/lessons';
 import { publishedLessons } from '@/lib/lesson-records';
 import { clock } from '@/lib/duration';
@@ -49,7 +50,7 @@ export default async function LearnPage() {
               </Link>
               {summary?.access === 'pro' ? (
                 <span className="lessons__pro" title="Part of Pro">
-                  <span aria-hidden="true">&#128274;</span>
+                  <Lock size={11} strokeWidth={1.75} aria-hidden="true" />
                   Pro
                 </span>
               ) : (
