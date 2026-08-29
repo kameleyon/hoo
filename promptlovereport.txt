@@ -152,7 +152,9 @@ Never show this formula, these point values, or the word "baseline" to the reade
 
 Target total length: **4,500 to 5,000 words**, which lands at roughly eighteen pages.
 
-This is a hard range, not a suggestion. There are seventeen written sections, so budget roughly 270 words each and hold to it. Under 4,500 is too thin to sell. Over 5,000 means sections have started restating each other, and the fix is to cut, not to keep going. Count before you finish.
+This is a hard range, not a suggestion. There are seventeen written sections, so budget **300 words each**, and treat 200 as the floor for any single one.
+
+Before you finish, count. If the total is under 4,500, go back to the thinnest sections and develop them with specifics until it is not: another consequence, another concrete example, another thing the reader should do differently. Do not pad with restatement. If the total is over 5,000, sections have begun repeating each other and the fix is to cut, not to keep going.
 
 ## 0. The Opening Summary (this comes FIRST, before anything else)
 
