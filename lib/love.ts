@@ -167,10 +167,17 @@ export interface AgeWindow {
  * Ages with no contact at all are left out rather than scored zero: nothing
  * seated either way is an absence of information, not a neutral year.
  */
-export function ageWindows(a: string, b: string): { best: AgeWindow[]; worst: AgeWindow[] } {
+export function ageWindows(
+  a: string,
+  b: string,
+  horizon = 90,
+): { best: AgeWindow[]; worst: AgeWindow[] } {
   const scored: AgeWindow[] = [];
 
-  for (let age = 0; age < 90; age++) {
+  // Ranked inside the horizon rather than ranked globally and trimmed after.
+  // Trimming leaves a short horizon with nothing to say about its hard years,
+  // which is exactly the half a reader needs.
+  for (let age = 0; age < Math.min(horizon, 90); age++) {
     const bInA = chartAt(a, age).get(b) ?? null;
     const aInB = chartAt(b, age).get(a) ?? null;
     if (!bInA && !aInB) continue;
@@ -183,6 +190,32 @@ export function ageWindows(a: string, b: string): { best: AgeWindow[]; worst: Ag
     best: byWeight.filter((w) => w.weight > 0).slice(0, 6),
     worst: [...byWeight].reverse().filter((w) => w.weight < 0).slice(0, 6),
   };
+}
+
+/**
+ * Year by year, in order, for as many years as asked for.
+ *
+ * The source is explicit that the Life Spread is read as the first year of
+ * life, Age 0, so year one is the first Age Spread and every year after is the
+ * next one. A business launched today is in its first year, not its zeroth.
+ *
+ * Unlike ageWindows this keeps the quiet years too: a year with no contact is
+ * a real answer about that year, and section-by-section writing needs the
+ * sequence unbroken rather than only its extremes.
+ */
+export function ageTimeline(a: string, b: string, years: number): AgeWindow[] {
+  const out: AgeWindow[] = [];
+  for (let i = 0; i < years; i++) {
+    const bInA = chartAt(a, i).get(b) ?? null;
+    const aInB = chartAt(b, i).get(a) ?? null;
+    out.push({
+      age: i + 1,
+      bInA,
+      aInB,
+      weight: (bInA ? (SEAT_WEIGHT[bInA] ?? 0) : 0) + (aInB ? (SEAT_WEIGHT[aInB] ?? 0) : 0),
+    });
+  }
+  return out;
 }
 
 /**

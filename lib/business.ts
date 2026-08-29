@@ -4,6 +4,8 @@ import cards from './data/card-index.json';
 import { cardForKey } from './cardology';
 import { readWord } from './reference';
 import {
+  ageTimeline,
+  ageWindows,
   chartOf,
   contactPoints,
   displacedBy,
@@ -174,6 +176,9 @@ export interface BusinessReading {
   suited: boolean;
   categories: { name: string; score: number }[];
   overall: number;
+  /** The first seven years in order, and the standout years across a lifetime. */
+  timeline: ReturnType<typeof ageTimeline>;
+  ages: ReturnType<typeof ageWindows>;
   hook: string;
 }
 
@@ -247,6 +252,10 @@ export function readBusiness(
     suited,
     categories,
     overall,
+    timeline: ageTimeline(idCode, dynCode, 7),
+    // A person might read about their sixtieth year. A business will not see
+    // one, so the standout years are ranked over a horizon a founder can act on.
+    ages: ageWindows(idCode, dynCode, 25),
     hook: hookFor(name, businessId.name, link, overall),
   };
 }

@@ -8,7 +8,7 @@ Do not calculate the Name Card, Launch Card, Business ID, Business+Person Dynami
 
 This report uses exactly two primary cards: the **Business ID** and the **Business+Person Dynamic**. The founder's standalone birth card does not get its own profile section. A founder's personal birth card reading is a separate product.
 
-Sections 16 and 17 (business evolution by year, and timing windows specific to the Dynamic Card) depend on a technique that has not yet been verified against source material. Until confirmed, generate the report with those two sections replaced by a single line: "Timing analysis for this pairing is in development and will be added in a future version of this report." Do not fabricate content for these sections under any circumstance, even if asked to fill the gap.
+Sections 16 and 17 are supplied with real data under "How This Business Evolves" and "Important Periods to Watch". Use exactly the years and seats given. Never invent a year, a seat or an event, and never present a year as a prediction of what will happen: a year describes the conditions the business is operating under, not its outcome.
 
 ---
 
@@ -108,8 +108,8 @@ The eight percentages are printed above the report by the layout, from the calcu
 13. **How to Best Treat This Business**, practical operating philosophy distinct from the avoid/encourage lists that follow.
 14. **Absolutely Avoid.** Five to seven items, each a full sentence and each a behaviour, drawn from the shadow expressions.
 15. **Actively Encourage.** Five to seven items, drawn from the uplifted expressions.
-16. **How This Business Evolves: Year One, Years One Through Seven, and After.** Pending, see note above.
-17. **Important Periods to Watch, Specific to This Pairing.** Pending, see note above.
+16. **How This Business Evolves: Year One, Years One Through Seven, and After** (300 to 400 words), from the supplied year-by-year seats. Give year one its own paragraph, then read years one through seven as a shape, then say what the pattern does after that.
+17. **Important Periods to Watch, Specific to This Pairing** (250 to 350 words), from the supplied strongest and hardest years. Name the years and say what each one makes easy or expensive. Conditions, not predictions.
 18. **The Verdict.**
 19. **Closing and CTA**: send to a cofounder or advisor, subscribe line.
 
@@ -117,7 +117,7 @@ The eight percentages are printed above the report by the layout, from the calcu
 
 # Final Output Requirements
 
-The report must include all 19 numbered sections above, in order, with sections 16 and 17 replaced by the single pending-notice line until the timing technique is confirmed.
+The report must include all 19 numbered sections above, in order, each written in full.
 
 Never use the words "Reward seat" or "Peak seat". Those are not terms this system uses. Seats nine and ten are called Bacchus and Vulcan.
 
@@ -127,6 +127,6 @@ The report must never include:
 * invented quotes, cards, or seats
 * exposed scoring arithmetic, point values, or the word "baseline"
 * a founder standalone birth card profile section
-* fabricated content in sections 16 or 17
+* invented years, seats or events in sections 16 and 17
 * the name of the underlying card system, its author, or any internal document/article title
 * a section that restates an earlier section instead of adding new, concrete detail

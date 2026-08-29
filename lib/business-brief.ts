@@ -124,6 +124,37 @@ export function businessBrief(
     'Use these seats by their real names, Bacchus and Vulcan. Never call either a',
     '"Reward" or a "Peak" seat: those are not terms this system uses.',
     '',
+    '## How This Business Evolves',
+    'These are years of the business, counting its first year as year one. Each',
+    'line is the seat the two cards hold in each other that year, which is what',
+    'gives the year its character. A year with no seat either way is a quiet one:',
+    'the business runs on its own momentum rather than on the founder.',
+    ...reading.timeline.map((y) => {
+      const parts = [
+        y.bInA ? `the Dynamic sits at the Business ID's ${y.bInA}` : null,
+        y.aInB ? `the Business ID sits at the Dynamic's ${y.aInB}` : null,
+      ].filter(Boolean);
+      return `Year ${y.age}: ${parts.length ? parts.join(', and ') : 'no seat either way'}`;
+    }),
+    'After year seven the cycle continues through the same sequence of seats.',
+    'Write year one, then years one through seven as a shape, then what comes after.',
+    '',
+    '## Important Periods to Watch',
+    'Standout years across the life of the business, from the same sequence.',
+    reading.ages.best.length
+      ? 'Strongest years: ' +
+        reading.ages.best
+          .map((w) => `year ${w.age + 1} (${[w.bInA && `Dynamic at ${w.bInA}`, w.aInB && `Business ID at ${w.aInB}`].filter(Boolean).join(', ')})`)
+          .join('; ')
+      : 'Strongest years: not available',
+    reading.ages.worst.length
+      ? 'Hardest years: ' +
+        reading.ages.worst
+          .map((w) => `year ${w.age + 1} (${[w.bInA && `Dynamic at ${w.bInA}`, w.aInB && `Business ID at ${w.aInB}`].filter(Boolean).join(', ')})`)
+          .join('; ')
+      : 'Hardest years: not available',
+    'Describe these as conditions, never as predictions of events.',
+    '',
     '## Instructions for missing data',
     'Never attribute any text to a named book, author or system. Everything above',
     'comes from our own notes and must never be presented as a quotation.',
