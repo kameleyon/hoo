@@ -3972,7 +3972,9 @@ textarea.control {
   background: var(--blue);
   position: relative;
   overflow: hidden;
-  transition: width 0.6s ease;
+  /* Short: the value updates four times a second, so a long transition would
+     lag behind its own animation instead of smoothing it. */
+  transition: width 0.45s linear;
 }
 
 .progress__fill::after {

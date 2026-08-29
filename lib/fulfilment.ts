@@ -226,6 +226,19 @@ export interface OrderStatus {
   progress: number;
   /** What is happening right now, in the reader's language. */
   stage: string;
+  /**
+   * Where this stage can creep to before its own milestone lands.
+   *
+   * The bar is anchored to real work, but a stage that takes ninety seconds
+   * would otherwise sit still for ninety seconds and look wedged. So the
+   * client eases from progress toward ceiling and never reaches it: motion
+   * between milestones, truth at them.
+   */
+  ceiling: number;
+  /** Seconds already spent in this stage, so the ease resumes where it was. */
+  elapsed: number;
+  /** Roughly how long this stage takes, measured from real runs. */
+  expected: number;
 }
 
 /**
@@ -241,25 +254,33 @@ export async function orderStatus(session: Stripe.Checkout.Session): Promise<Ord
   const createdMs = (session.created ?? 0) * 1000;
   const waitedMinutes = createdMs ? Math.floor((Date.now() - createdMs) / 60000) : 0;
 
+  const still = { ceiling: 0, elapsed: 0, expected: 1 };
+
   if (session.payment_status === 'unpaid') {
-    return { state: 'unpaid', waitedMinutes, progress: 0, stage: 'Waiting for payment' };
+    return { state: 'unpaid', waitedMinutes, progress: 0, stage: 'Waiting for payment', ...still };
   }
 
   const job = await jobFor(session.id);
   if (job?.status === 'ready') {
-    return { state: 'ready', waitedMinutes, progress: 100, stage: 'Ready' };
+    return { state: 'ready', waitedMinutes, progress: 100, stage: 'Ready', ...still, ceiling: 100 };
   }
   if (job?.status === 'failed') {
-    return { state: 'failed', waitedMinutes, progress: 0, stage: 'Stopped' };
+    return { state: 'failed', waitedMinutes, progress: 0, stage: 'Stopped', ...still };
   }
 
-  // Each artefact that exists is a stage that finished. The numbers are the
-  // rough share of the wait each stage takes, not a guess at a percentage.
-  const { progress, stage } = !job?.markdown
-    ? { progress: 12, stage: 'Writing the reading' }
+  // Each artefact that exists is a stage that finished, so those numbers are
+  // real. The ceiling is where the stage may drift to while it runs, and the
+  // expected seconds come from timing actual jobs: writing dominates, the PDF
+  // is almost instant, narration is long again because it is sent in parts.
+  const { progress, ceiling, expected, stage } = !job?.markdown
+    ? { progress: 12, ceiling: 60, expected: 110, stage: 'Writing the reading' }
     : !job?.pdf_path
-      ? { progress: 62, stage: 'Typesetting the PDF' }
-      : { progress: 84, stage: 'Recording the narration' };
+      ? { progress: 62, ceiling: 80, expected: 12, stage: 'Typesetting the PDF' }
+      : { progress: 84, ceiling: 98, expected: 90, stage: 'Recording the narration' };
+
+  // updated_at moves when a stage finishes, so it is also when this one began.
+  const stageStart = job?.updated_at ? new Date(job.updated_at).getTime() : createdMs;
+  const elapsed = Math.max(0, Math.floor((Date.now() - stageStart) / 1000));
 
   // Paid with no job row at all is itself a problem worth surfacing once the
   // window has passed: it means the webhook never arrived.
@@ -268,5 +289,8 @@ export async function orderStatus(session: Stripe.Checkout.Session): Promise<Ord
     waitedMinutes,
     progress,
     stage,
+    ceiling,
+    elapsed,
+    expected,
   };
 }

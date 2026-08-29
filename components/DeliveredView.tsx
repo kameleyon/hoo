@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type Stripe from 'stripe';
 import { OrderPoller } from './OrderPoller';
 import { ReadingAudio } from './ReadingAudio';
+import { ProgressBar, ProgressLabel } from './ProgressBar';
 import { orderAssets, orderStatus } from '@/lib/fulfilment';
 import { documentNames, reportById } from '@/lib/reports';
 
@@ -43,7 +44,8 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
     );
   }
 
-  const { state, waitedMinutes, progress, stage } = await orderStatus(session);
+  const { state, waitedMinutes, progress, stage, ceiling, elapsed, expected } =
+    await orderStatus(session);
 
   // The reading is what was bought, so an unpaid session is not shown one. It
   // gets the truth about its own payment and nothing else.
@@ -92,16 +94,13 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
                 {ready ? (
                   <p className="filerow__sub">Ready to download</p>
                 ) : (
-                  <span
-                    className="progress"
-                    role="progressbar"
-                    aria-valuenow={progress}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={stage}
-                  >
-                    <span className="progress__fill" style={{ width: `${progress}%` }} />
-                  </span>
+                  <ProgressBar
+                    from={progress}
+                    to={ceiling}
+                    elapsed={elapsed}
+                    expected={expected}
+                    label={stage}
+                  />
                 )}
               </div>
               {assets.pdfUrl ? (
@@ -109,7 +108,9 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
                   Download
                 </a>
               ) : (
-                <span className="filerow__action filerow__action--idle">{progress}%</span>
+                <span className="filerow__action filerow__action--idle">
+                  <ProgressLabel from={progress} to={ceiling} elapsed={elapsed} expected={expected} />
+                </span>
               )}
             </div>
           </div>
@@ -130,19 +131,16 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p className="filerow__name">{doc.mp3Name}</p>
-                  <span
-                    className="progress"
-                    role="progressbar"
-                    aria-valuenow={progress}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={stage}
-                  >
-                    <span className="progress__fill" style={{ width: `${progress}%` }} />
-                  </span>
+                  <ProgressBar
+                    from={progress}
+                    to={ceiling}
+                    elapsed={elapsed}
+                    expected={expected}
+                    label={stage}
+                  />
                 </div>
                 <span className="filerow__sub" style={{ flex: 'none', marginTop: 0 }}>
-                  {progress}%
+                  <ProgressLabel from={progress} to={ceiling} elapsed={elapsed} expected={expected} />
                 </span>
               </div>
             )}
