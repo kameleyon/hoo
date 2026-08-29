@@ -21,7 +21,8 @@
     "grant:admin": "node --env-file=.env.local scripts/grant-admin.mjs",
     "lessons:check": "node scripts/check-lessons.mjs",
     "data:archetypes": "node scripts/build-archetypes.mjs",
-    "data:calendar": "node scripts/verify-calendar.mjs"
+    "data:calendar": "node scripts/verify-calendar.mjs",
+    "mark": "node scripts/build-mark.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.7.0",
