@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { parseDayKey } from '@/lib/cardology';
 import { readLove } from '@/lib/love';
+import { readBusiness } from '@/lib/business';
 
 /**
  * The free half of the Love report.
@@ -22,7 +23,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
   }
 
-  const { a, b } = (body ?? {}) as { a?: unknown; b?: unknown };
+  const { a, b, name, launch, report } = (body ?? {}) as {
+    a?: unknown;
+    b?: unknown;
+    name?: unknown;
+    launch?: unknown;
+    report?: unknown;
+  };
+
+  if (report === 'biz') {
+    if (typeof name !== 'string' || !name.trim() || typeof launch !== 'string' || typeof a !== 'string') {
+      return NextResponse.json({ error: 'a name and two dates are required' }, { status: 400 });
+    }
+    if (!parseDayKey(launch) || !parseDayKey(a)) {
+      return NextResponse.json({ error: 'those are not both dates' }, { status: 400 });
+    }
+    const reading = readBusiness(name.trim(), launch, a);
+    if (!reading) {
+      return NextResponse.json({ error: 'could not read that' }, { status: 400 });
+    }
+    return NextResponse.json({
+      a: { name: reading.businessId.name, code: reading.businessId.code },
+      b: { name: reading.dynamic.name, code: reading.dynamic.code },
+      composite: reading.businessId.name,
+      categories: reading.categories,
+      overall: reading.overall,
+      hook: reading.hook,
+    });
+  }
+
   if (typeof a !== 'string' || typeof b !== 'string') {
     return NextResponse.json({ error: 'two birthdays are required' }, { status: 400 });
   }

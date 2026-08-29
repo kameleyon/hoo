@@ -3,7 +3,8 @@ import type Stripe from 'stripe';
 import { waitUntil } from '@vercel/functions';
 import { supabaseAdmin } from './supabase/admin';
 import { compatibilityBrief } from './love-brief';
-import { writeLoveReport } from './writer';
+import { businessBrief } from './business-brief';
+import { hasWriter, writeReport } from './writer';
 import { documentPdf } from './lesson-pdf';
 import { narrateLong, narrationScript } from './lemonfox';
 import { reportById } from './reports';
@@ -120,28 +121,23 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
   try {
     const report = reportById(job.report_id);
     if (!report) throw new Error(`unknown report ${job.report_id}`);
-    if (job.report_id !== 'love') throw new Error(`no writer for ${job.report_id} yet`);
+    if (!hasWriter(job.report_id)) throw new Error(`no writer for ${job.report_id} yet`);
 
-    const a = session.metadata?.f_a;
-    const b = session.metadata?.f_b;
-    if (!a || !b) throw new Error('the order is missing its birthdays');
-
-    // Recomputed every time rather than stored: it is pure arithmetic over the
-    // two dates, so it cannot drift, and the PDF needs the numbers even on a
-    // retry where the words already exist.
-    const built = compatibilityBrief(a, b);
-    if (!built) throw new Error('could not read those two dates');
+    // Recomputed every time rather than stored: every reading is pure
+    // arithmetic over its inputs, so it cannot drift, and the PDF needs the
+    // numbers even on a retry where the words already exist.
+    const built = briefFor(job.report_id, session);
 
     // 1. The words. Reused on a retry so a narration failure does not pay for
     //    the writing twice.
     let markdown = job.markdown;
     if (!markdown) {
-      const written = await writeLoveReport(built.brief);
+      const written = await writeReport(job.report_id, built.brief);
       markdown = written.markdown;
       await db.from('report_jobs').update({ markdown }).eq('session_id', job.session_id);
     }
 
-    const title = `${report.title}: ${titleFor(a, b)}`;
+    const title = `${report.title}: ${built.subject}`;
 
     // 2. The PDF.
     let pdfPath = job.pdf_path;
@@ -150,10 +146,7 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
         title,
         markdown,
         eyebrow: 'A READING',
-        scores: [
-          ...built.reading.categories,
-          { name: 'Overall', score: built.reading.overall },
-        ],
+        scores: [...built.categories, { name: 'Overall', score: built.overall }],
       });
       pdfPath = `${job.session_id}/reading.pdf`;
       const { error } = await db.storage
@@ -188,6 +181,56 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
   } catch (error) {
     await fail(job.session_id, attempts, error);
   }
+}
+
+interface Built {
+  brief: string;
+  subject: string;
+  categories: { name: string; score: number }[];
+  overall: number;
+}
+
+/**
+ * The data block for whichever reading was bought.
+ *
+ * Each report answers different questions, so each has its own inputs and its
+ * own scorer, but they all hand back the same four things: the block the
+ * writer reads, a subject line for the document title, and the numbers the PDF
+ * prints from.
+ */
+function briefFor(reportId: string, session: Stripe.Checkout.Session): Built {
+  const f = (key: string) => session.metadata?.[`f_${key}`];
+
+  if (reportId === 'love') {
+    const a = f('a');
+    const b = f('b');
+    if (!a || !b) throw new Error('the order is missing its birthdays');
+    const built = compatibilityBrief(a, b);
+    if (!built) throw new Error('could not read those two dates');
+    return {
+      brief: built.brief,
+      subject: `${sayDate(a)} and ${sayDate(b)}`,
+      categories: built.reading.categories,
+      overall: built.reading.overall,
+    };
+  }
+
+  if (reportId === 'biz') {
+    const name = f('name');
+    const launch = f('launch');
+    const founder = f('a');
+    if (!name || !launch || !founder) throw new Error('the order is missing its answers');
+    const built = businessBrief(name, launch, founder);
+    if (!built) throw new Error('could not read that name and those dates');
+    return {
+      brief: built.brief,
+      subject: name,
+      categories: built.reading.categories,
+      overall: built.reading.overall,
+    };
+  }
+
+  throw new Error(`no brief for ${reportId}`);
 }
 
 /**
@@ -237,17 +280,14 @@ async function notify(
   }
 }
 
-/** "8 October and 26 February" — the two dates, for the document's title. */
-function titleFor(a: string, b: string): string {
+/** "8 October", for the document's title. */
+function sayDate(key: string): string {
   const MONTHS = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
-  const say = (key: string) => {
-    const [m, d] = key.split('-').map(Number);
-    return `${d} ${MONTHS[m - 1] ?? ''}`.trim();
-  };
-  return `${say(a)} and ${say(b)}`;
+  const [m, d] = key.split('-').map(Number);
+  return `${d} ${MONTHS[m - 1] ?? ''}`.trim();
 }
 
 /**

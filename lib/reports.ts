@@ -66,13 +66,14 @@ export const REPORTS: ReportDefinition[] = [
     id: 'biz',
     cat: 'Money & Work',
     title: 'Business Name & Launch',
-    price: '$29',
+    price: '$3.49',
+    proPrice: '$2.59',
     line: 'A name, a launch date, and whether the two agree with the card running your year.',
     pages: '24 pages',
     audio: '19 min narration',
     turn: 'Ready in about three minutes',
-    pdfLine: 'A 24-page PDF, yours to download and keep',
-    audioLine: 'A 19-minute narration you can listen to offline',
+    pdfLine: 'A full PDF, yours to download and keep',
+    audioLine: 'A narration you can listen to offline',
     inside:
       'The reading takes the name apart, sets the card behind it against your own, then tests the launch date — whether it lands in a period that opens doors or one that audits them. It closes with two alternative dates and the case for each.',
     fields: [

@@ -70,7 +70,16 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
       const response = await fetch('/api/love/quick', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ a: valueFor('a', 'date'), b: valueFor('b', 'date') }),
+        body: JSON.stringify(
+          report.id === 'biz'
+            ? {
+                report: 'biz',
+                name: valueFor('name', 'text'),
+                launch: valueFor('launch', 'date'),
+                a: valueFor('a', 'date'),
+              }
+            : { a: valueFor('a', 'date'), b: valueFor('b', 'date') },
+        ),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'unavailable');
@@ -208,8 +217,17 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
 
               {quick.composite && (
                 <p className="quick__composite">
-                  Together they make the <strong>{quick.composite}</strong>. That card is the
-                  relationship itself, and it runs the whole dynamic.
+                  {report.id === 'biz' ? (
+                    <>
+                      This business reads as the <strong>{quick.composite}</strong>. That card is
+                      its identity, and it decides what the business is good at before you do.
+                    </>
+                  ) : (
+                    <>
+                      Together they make the <strong>{quick.composite}</strong>. That card is the
+                      relationship itself, and it runs the whole dynamic.
+                    </>
+                  )}
                 </p>
               )}
 
@@ -257,7 +275,7 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
             <span className="btn-primary__price">{price}</span>
           </button>
 
-          {report.id === 'love' && (
+          {(report.id === 'love' || report.id === 'biz') && (
             <button
               type="button"
               className="btn-secondary btn-secondary--full"

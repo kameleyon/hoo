@@ -20,7 +20,7 @@ const MODEL = process.env.OPENROUTER_MODEL ?? 'anthropic/claude-sonnet-4.5';
 
 export class WriterNotConfigured extends Error {}
 
-let cachedPrompt: string | null = null;
+const cachedPrompts = new Map<string, string>();
 
 /**
  * The system prompt, read once per process.
@@ -29,10 +29,22 @@ let cachedPrompt: string | null = null;
  * included because it is read by a literal path. Building the path from a
  * variable would work locally and 404 in production.
  */
-async function systemPrompt(): Promise<string> {
-  if (cachedPrompt) return cachedPrompt;
-  cachedPrompt = await readFile(join(process.cwd(), 'promptlovereport.txt'), 'utf8');
-  return cachedPrompt;
+async function systemPrompt(file: string): Promise<string> {
+  const held = cachedPrompts.get(file);
+  if (held) return held;
+  const text = await readFile(join(process.cwd(), file), 'utf8');
+  cachedPrompts.set(file, text);
+  return text;
+}
+
+/** Which prompt writes which report. */
+const PROMPTS: Record<string, string> = {
+  love: 'promptlovereport.txt',
+  biz: 'promptbusinessreport.txt',
+};
+
+export function hasWriter(reportId: string): boolean {
+  return reportId in PROMPTS;
 }
 
 /**
@@ -55,7 +67,13 @@ export interface Written {
   words: number;
 }
 
-export async function writeLoveReport(brief: string): Promise<Written> {
+export async function writeReport(reportId: string, brief: string): Promise<Written> {
+  const promptFile = PROMPTS[reportId];
+  if (!promptFile) throw new Error(`no writer for ${reportId}`);
+  return write(promptFile, brief);
+}
+
+async function write(promptFile: string, brief: string): Promise<Written> {
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) throw new WriterNotConfigured('OPENROUTER_API_KEY is not set');
 
@@ -73,7 +91,7 @@ export async function writeLoveReport(brief: string): Promise<Written> {
       max_tokens: MAX_TOKENS,
       temperature: 0.7,
       messages: [
-        { role: 'system', content: await systemPrompt() },
+        { role: 'system', content: await systemPrompt(promptFile) },
         { role: 'user', content: brief },
       ],
     }),

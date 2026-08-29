@@ -198,6 +198,24 @@ export function venusTie(a: string, b: string): { aVenusIsB: boolean; bVenusIsA:
   return { aVenusIsB: venusOf(a) === b, bVenusIsA: venusOf(b) === a };
 }
 
+/**
+ * The card a given card displaced.
+ *
+ * The source frames the Pure Spread as the original order and the Life Spread
+ * as what people made of it, so every card sits in a seat that belonged to
+ * another. "Note which card in the Natural spread is displaced by your Birth
+ * Card, the card that holds the same position." Its influence is described as
+ * working underneath, subconsciously, rather than on the surface.
+ *
+ * Checked against the source's own examples by scripts/verify-displaced.mjs:
+ * the 3 of Hearts displaces the Ace of Hearts, and the 6 of Diamonds displaces
+ * the 9 of Clubs.
+ */
+export function displacedBy(code: string): string | null {
+  const at = INDEX.get(code);
+  return at === undefined ? null : (PURE[at] ?? null);
+}
+
 export type LinkDirection = 'mutual' | 'a-in-b' | 'b-in-a' | 'none';
 
 export interface Link {
