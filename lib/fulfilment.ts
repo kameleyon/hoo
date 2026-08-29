@@ -215,6 +215,17 @@ export interface OrderStatus {
   state: OrderState;
   /** Whole minutes since checkout, for telling the reader what we know. */
   waitedMinutes: number;
+  /**
+   * How far along, 0 to 100.
+   *
+   * Real rather than animated: a reading is written, then typeset, then read
+   * aloud, and each of those leaves something behind in the job. So the bar
+   * moves when work actually completes, and a bar that stops moving means
+   * work has actually stopped.
+   */
+  progress: number;
+  /** What is happening right now, in the reader's language. */
+  stage: string;
 }
 
 /**
@@ -230,16 +241,32 @@ export async function orderStatus(session: Stripe.Checkout.Session): Promise<Ord
   const createdMs = (session.created ?? 0) * 1000;
   const waitedMinutes = createdMs ? Math.floor((Date.now() - createdMs) / 60000) : 0;
 
-  if (session.payment_status === 'unpaid') return { state: 'unpaid', waitedMinutes };
+  if (session.payment_status === 'unpaid') {
+    return { state: 'unpaid', waitedMinutes, progress: 0, stage: 'Waiting for payment' };
+  }
 
   const job = await jobFor(session.id);
-  if (job?.status === 'ready') return { state: 'ready', waitedMinutes };
-  if (job?.status === 'failed') return { state: 'failed', waitedMinutes };
+  if (job?.status === 'ready') {
+    return { state: 'ready', waitedMinutes, progress: 100, stage: 'Ready' };
+  }
+  if (job?.status === 'failed') {
+    return { state: 'failed', waitedMinutes, progress: 0, stage: 'Stopped' };
+  }
+
+  // Each artefact that exists is a stage that finished. The numbers are the
+  // rough share of the wait each stage takes, not a guess at a percentage.
+  const { progress, stage } = !job?.markdown
+    ? { progress: 12, stage: 'Writing the reading' }
+    : !job?.pdf_path
+      ? { progress: 62, stage: 'Typesetting the PDF' }
+      : { progress: 84, stage: 'Recording the narration' };
 
   // Paid with no job row at all is itself a problem worth surfacing once the
   // window has passed: it means the webhook never arrived.
   return {
     state: waitedMinutes >= LATE_AFTER_MINUTES ? 'late' : 'writing',
     waitedMinutes,
+    progress,
+    stage,
   };
 }

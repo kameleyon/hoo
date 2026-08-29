@@ -43,7 +43,7 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
     );
   }
 
-  const { state, waitedMinutes } = await orderStatus(session);
+  const { state, waitedMinutes, progress, stage } = await orderStatus(session);
 
   // The reading is what was bought, so an unpaid session is not shown one. It
   // gets the truth about its own payment and nothing else.
@@ -92,8 +92,15 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
                 {ready ? (
                   <p className="filerow__sub">Ready to download</p>
                 ) : (
-                  <span className="loading" role="status" aria-label="Writing the reading">
-                    <span className="loading__sweep" />
+                  <span
+                    className="progress"
+                    role="progressbar"
+                    aria-valuenow={progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={stage}
+                  >
+                    <span className="progress__fill" style={{ width: `${progress}%` }} />
                   </span>
                 )}
               </div>
@@ -102,7 +109,7 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
                   Download
                 </a>
               ) : (
-                <span className="filerow__action filerow__action--idle">Writing</span>
+                <span className="filerow__action filerow__action--idle">{progress}%</span>
               )}
             </div>
           </div>
@@ -123,12 +130,19 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p className="filerow__name">{doc.mp3Name}</p>
-                  <span className="loading" role="status" aria-label="Recording the narration">
-                    <span className="loading__sweep" />
+                  <span
+                    className="progress"
+                    role="progressbar"
+                    aria-valuenow={progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={stage}
+                  >
+                    <span className="progress__fill" style={{ width: `${progress}%` }} />
                   </span>
                 </div>
                 <span className="filerow__sub" style={{ flex: 'none', marginTop: 0 }}>
-                  Recording
+                  {progress}%
                 </span>
               </div>
             )}
@@ -137,7 +151,7 @@ export async function DeliveredView({ session }: { session: Stripe.Checkout.Sess
 
         {state === 'writing' && (
           <p className="fineprint" style={{ textAlign: 'left', marginTop: 16 }} aria-live="polite">
-            Usually ready in a minute or two. This page updates itself, and
+            {stage}. Usually ready in a minute or two. This page updates itself, and
             {email ? ` we will email ${email} the moment it is.` : ' we will email you the moment it is.'}
           </p>
         )}

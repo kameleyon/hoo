@@ -3774,48 +3774,6 @@ textarea.control {
   font-weight: 600;
 }
 
-/* --- work in progress, shown rather than described ----------------------- */
-
-/*
- * A bar with a light sweeping across it. It sits where the file's own details
- * will appear, so the row visibly becomes the finished thing rather than
- * swapping one label for another. Readers skip prose; they do not skip motion.
- */
-.loading {
-  display: block;
-  height: 3px;
-  margin-top: 8px;
-  border-radius: 2px;
-  background: var(--bar-idle);
-  overflow: hidden;
-}
-
-.loading__sweep {
-  display: block;
-  height: 100%;
-  width: 40%;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, var(--blue), transparent);
-  animation: loading-sweep 1.6s ease-in-out infinite;
-}
-
-@keyframes loading-sweep {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(320%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .loading__sweep {
-    animation: none;
-    width: 100%;
-    background: var(--blue-line);
-  }
-}
-
 /* --- the narration, played in place -------------------------------------- */
 
 .player {
@@ -3973,4 +3931,57 @@ textarea.control {
 
 .lessons__pro svg {
   opacity: 0.75;
+}
+
+/* --- real progress, not an animation ------------------------------------- */
+
+/*
+ * The fill is a percentage of actual work finished: written, typeset,
+ * narrated. It steps rather than creeps, so the sweep across it is what says
+ * "still alive" between steps. A bar that stops moving here means work has
+ * genuinely stopped, which is the whole point of not faking it.
+ */
+.progress {
+  display: block;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--bar-idle);
+  overflow: hidden;
+}
+
+.progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--blue);
+  position: relative;
+  overflow: hidden;
+  transition: width 0.6s ease;
+}
+
+.progress__fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 55%), transparent);
+  animation: progress-sheen 1.6s ease-in-out infinite;
+}
+
+@keyframes progress-sheen {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress__fill {
+    transition: none;
+  }
+  .progress__fill::after {
+    animation: none;
+  }
 }
