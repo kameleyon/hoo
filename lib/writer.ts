@@ -13,8 +13,8 @@ import { join } from 'node:path';
 
 const ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
-/** Four thousand words is roughly 5,500 tokens, so this leaves real headroom. */
-const MAX_TOKENS = 12000;
+/** Five and a half thousand words is roughly 7,500 tokens; this leaves room. */
+const MAX_TOKENS = 16000;
 
 const MODEL = process.env.OPENROUTER_MODEL ?? 'anthropic/claude-sonnet-4.5';
 
