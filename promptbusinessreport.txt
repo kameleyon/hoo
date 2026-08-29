@@ -85,7 +85,7 @@ Score eight categories 0 to 100: Brand Identity Clarity, Founder-Business Alignm
 
 # Report Structure
 
-Target total length: **4,500 to 5,500 words**, which lands at roughly eighteen pages. Anything shorter than 4,500 is too thin to sell. Write long: every section should be developed with concrete detail, examples and consequences rather than summarised. A section that could be two paragraphs should be four.
+Target total length: **4,500 to 5,000 words**, which lands at roughly eighteen pages. Anything shorter than 4,500 is too thin to sell, and anything past 5,000 starts repeating itself. Write long: every section should be developed with concrete detail, examples and consequences rather than summarised. A section that could be two paragraphs should be four.
 
 The eight percentages are printed above the report by the layout, from the calculated figures. **Do not list them again.** You may refer to individual figures inside sentences, never as a table.
 

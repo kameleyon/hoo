@@ -150,7 +150,7 @@ Never show this formula, these point values, or the word "baseline" to the reade
 
 # Report Structure
 
-Target total length: **3,000 to 4,000 words.** Anything shorter than 3,000 is too thin to sell. Write to the upper end of every section's range rather than the lower.
+Target total length: **4,500 to 5,000 words**, which lands at roughly eighteen pages. Anything shorter than 4,500 is too thin to sell, and anything past 5,000 starts repeating itself. Write long: every section should be developed with concrete detail, examples and consequences rather than summarised. A section that could be two paragraphs should be four.
 
 ## 0. The Opening Summary (this comes FIRST, before anything else)
 
