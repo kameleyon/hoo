@@ -4,6 +4,7 @@ import cards from './data/card-index.json';
 import { cardForKey } from './cardology';
 import { readWord } from './reference';
 import {
+  chartOf,
   contactPoints,
   displacedBy,
   linkBetween,
@@ -42,6 +43,15 @@ export interface CardFacts {
   row: string | null;
   column: string | null;
   displaced: { code: string; name: string } | null;
+  /**
+   * Seats nine and ten of the card's own chart.
+   *
+   * Named from the source's TABLE OF NUMBER RULERS, which numbers the seats
+   * from zero: Sun 0, Mercury 1, through Pluto 8, Bacchus 9, Vulcan 10, Moon
+   * 11, Earth 12. Bacchus rules the Ten and Vulcan the Jack.
+   */
+  bacchus: { code: string; name: string } | null;
+  vulcan: { code: string; name: string } | null;
 }
 
 /**
@@ -80,6 +90,16 @@ function facts(code: string): CardFacts | null {
   const contact = contactPoints(code, code);
   const disp = displacedBy(code);
   const dispCard = disp ? CARD.get(disp) : null;
+
+  const seatCard = (seat: string) => {
+    for (const [card, name] of chartOf(code)) {
+      if (name === seat) {
+        const c = CARD.get(card);
+        return c ? { code: c.code, name: c.name } : null;
+      }
+    }
+    return null;
+  };
   return {
     code,
     name: c.name,
@@ -93,6 +113,8 @@ function facts(code: string): CardFacts | null {
     row: contact.a?.row ?? null,
     column: contact.a?.column ?? null,
     displaced: dispCard ? { code: dispCard.code, name: dispCard.name } : null,
+    bacchus: seatCard('Bacchus'),
+    vulcan: seatCard('Vulcan'),
   };
 }
 

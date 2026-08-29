@@ -9,10 +9,11 @@ import type { DayKey } from './types';
  * genuinely missing says "not available" rather than being left blank, because
  * a blank after a label is an invitation to fill it.
  *
- * Two fields are permanently marked unavailable. The Reward seat and the Peak
- * seat are named in the report spec but are not defined in any source we hold,
- * and the prompt's own rule is to write around a missing field rather than
- * guess at one.
+ * The report spec originally asked for a "Reward seat" and a "Peak seat".
+ * Neither name appears in any source we hold. The seats it meant are numbers
+ * nine and ten of a card's own chart, which the source's TABLE OF NUMBER
+ * RULERS names Bacchus and Vulcan, so those are supplied under their real
+ * names rather than approximated under invented ones.
  */
 
 const NA = 'not available';
@@ -112,14 +113,16 @@ export function businessBrief(
     }`,
     `Suit pairing named compatible by the source: ${reading.suited ? 'yes' : 'no'}`,
     '',
-    '## Reward and Peak Seats',
-    // Named in the report spec, defined in nothing we hold. Saying so is what
-    // stops sections eleven and twelve inventing a seat to hang themselves on.
-    `Business ID's Reward Card: ${NA}`,
-    `Business ID's Peak Card: ${NA}`,
-    `Dynamic Card's Reward Card: ${NA}`,
-    `Dynamic Card's Peak Card: ${NA}`,
-    'No Reward or Peak seat data exists for either card. Ground sections 11 and 12 in the uplifted and shadow expressions instead, and do not mention a Reward or Peak seat at all.',
+    '## Seats Nine and Ten',
+    'The source numbers the thirteen seats from zero: Sun, Mercury, Venus, Mars,',
+    'Jupiter, Saturn, Uranus, Neptune, Pluto, Bacchus, Vulcan, Moon, Earth.',
+    'Bacchus is the ninth and rules the Ten. Vulcan is the tenth and rules the Jack.',
+    `Business ID's Bacchus card: ${reading.businessId.bacchus?.name ?? NA}`,
+    `Business ID's Vulcan card: ${reading.businessId.vulcan?.name ?? NA}`,
+    `Dynamic Card's Bacchus card: ${reading.dynamic.bacchus?.name ?? NA}`,
+    `Dynamic Card's Vulcan card: ${reading.dynamic.vulcan?.name ?? NA}`,
+    'Use these seats by their real names, Bacchus and Vulcan. Never call either a',
+    '"Reward" or a "Peak" seat: those are not terms this system uses.',
     '',
     '## Instructions for missing data',
     'Never attribute any text to a named book, author or system. Everything above',
