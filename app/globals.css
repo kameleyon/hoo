@@ -3663,10 +3663,25 @@ textarea.control {
  * Reduced motion still needs a liveness cue, so the dots hold at a visible
  * midpoint instead of disappearing into the idle colour.
  */
+/*
+ * Reduced motion means less movement, not none. Switching animation off
+ * entirely left machines with animations disabled, which is the Windows
+ * default, staring at something that looked frozen. A slow opacity pulse
+ * moves nothing across the screen and still says the thing is alive.
+ */
 @media (prefers-reduced-motion: reduce) {
   .working__dots i {
-    animation: none;
-    opacity: 0.55;
+    animation: working-fade 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes working-fade {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
@@ -3977,11 +3992,20 @@ textarea.control {
   }
 }
 
+/* Same rule here: the sheen stops travelling, the bar keeps breathing. */
 @media (prefers-reduced-motion: reduce) {
-  .progress__fill {
-    transition: none;
-  }
   .progress__fill::after {
-    animation: none;
+    animation: progress-pulse 2.2s ease-in-out infinite;
+    background: rgb(255 255 255 / 40%);
+  }
+}
+
+@keyframes progress-pulse {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
   }
 }
