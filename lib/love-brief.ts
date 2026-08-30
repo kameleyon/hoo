@@ -1,5 +1,6 @@
 import 'server-only';
 import cards from './data/card-index.json';
+import { fullCard } from './card-facts';
 import { chartOf, readLove, type LoveReading } from './love';
 import type { DayKey } from './types';
 
@@ -35,6 +36,8 @@ function seatCard(code: string, seat: string): string | null {
 
 function person(label: string, side: LoveReading['a'], key: DayKey): string {
   const c = CARD.get(side.code);
+  // The situational fields only exist on the full record.
+  const f = fullCard(side.code);
   const planets = side.code;
   return [
     `## ${label}`,
@@ -45,8 +48,8 @@ function person(label: string, side: LoveReading['a'], key: DayKey): string {
     `Intensity: ${val(c?.intensity)}`,
     `Uplifted Expression: ${val(c?.uplifted)}`,
     `Shadow Expression: ${val(c?.shadow)}`,
-    `Love/Relationships field: ${val(c?.desc)}`,
-    `Business/Money field: ${val(c?.lesson)}`,
+    `Love/Relationships field: ${val(f?.love)}`,
+    `Business/Money field: ${val(f?.money)}`,
     `Mercury companion card: ${seatCard(planets, 'Mercury') ?? NA}`,
     // The source's quotes were never digitised per card, and the prompt forbids
     // inventing one, so this stays absent rather than approximated.

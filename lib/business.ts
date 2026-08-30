@@ -3,6 +3,7 @@ import solar from './data/solar.json';
 import cards from './data/card-index.json';
 import { cardForKey } from './cardology';
 import { readWord } from './reference';
+import { fullCard } from './card-facts';
 import {
   ageTimeline,
   ageWindows,
@@ -42,6 +43,7 @@ export interface CardFacts {
   uplifted: string | null;
   shadow: string | null;
   money: string | null;
+  lesson: string | null;
   row: string | null;
   column: string | null;
   displaced: { code: string; name: string } | null;
@@ -111,7 +113,10 @@ function facts(code: string): CardFacts | null {
     intensity: c.intensity?.trim() || null,
     uplifted: c.uplifted?.trim() || null,
     shadow: c.shadow?.trim() || null,
-    money: c.lesson?.trim() || null,
+    // The Business-Money field, not the life lesson: they are different columns
+    // and only the full record carries the first.
+    money: fullCard(code)?.money || null,
+    lesson: fullCard(code)?.lesson || null,
     row: contact.a?.row ?? null,
     column: contact.a?.column ?? null,
     displaced: dispCard ? { code: dispCard.code, name: dispCard.name } : null,

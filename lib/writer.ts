@@ -41,6 +41,7 @@ async function systemPrompt(file: string): Promise<string> {
 const PROMPTS: Record<string, string> = {
   love: 'promptlovereport.txt',
   biz: 'promptbusinessreport.txt',
+  custom: 'promptonequestion.txt',
 };
 
 export function hasWriter(reportId: string): boolean {

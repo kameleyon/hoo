@@ -40,6 +40,7 @@ function cardBlock(label: string, c: CardFacts, sum: string): string {
     `Uplifted Expression: ${val(c.uplifted)}`,
     `Shadow Expression: ${val(c.shadow)}`,
     `Business-Money field: ${val(c.money)}`,
+    `Primary Life Lesson: ${val(c.lesson)}`,
     `Row Planet: ${val(c.row)}`,
     `Column Planet: ${val(c.column)}`,
   ].join('\n');

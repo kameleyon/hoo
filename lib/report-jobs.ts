@@ -4,6 +4,7 @@ import { waitUntil } from '@vercel/functions';
 import { supabaseAdmin } from './supabase/admin';
 import { compatibilityBrief } from './love-brief';
 import { businessBrief } from './business-brief';
+import { questionBrief } from './question-brief';
 import { hasWriter, writeReport } from './writer';
 import { documentPdf } from './lesson-pdf';
 import { narrateLong, narrationScript } from './lemonfox';
@@ -146,7 +147,9 @@ export async function processJob(job: ReportJob, session: Stripe.Checkout.Sessio
         title,
         markdown,
         eyebrow: 'A READING',
-        scores: [...built.categories, { name: 'Overall', score: built.overall }],
+        scores: built.categories.length
+          ? [...built.categories, { name: 'Overall', score: built.overall }]
+          : undefined,
       });
       pdfPath = `${job.session_id}/reading.pdf`;
       const { error } = await db.storage
@@ -227,6 +230,24 @@ function briefFor(reportId: string, session: Stripe.Checkout.Session): Built {
       subject: name,
       categories: built.reading.categories,
       overall: built.reading.overall,
+    };
+  }
+
+  if (reportId === 'custom') {
+    const q = f('q');
+    const birthday = f('a');
+    if (!q || !birthday) throw new Error('the order is missing the question or the birthday');
+    const built = questionBrief(q, birthday);
+    if (!built) throw new Error('could not read that question and date');
+    return {
+      brief: built.brief,
+      // The question is the title. Trimmed, because a document heading cannot
+      // carry three hundred characters of someone thinking out loud.
+      subject: q.length > 70 ? `${q.slice(0, 67).trimEnd()}...` : q,
+      // No scorecard on this one: nothing here is scored, so the PDF opens on
+      // the reading rather than on a page of numbers that do not exist.
+      categories: [],
+      overall: 0,
     };
   }
 

@@ -144,8 +144,8 @@ export const REPORTS: ReportDefinition[] = [
     pages: '10 pages',
     audio: '8 min narration',
     turn: 'Ready in about two minutes',
-    pdfLine: 'A 10-page PDF, yours to download and keep',
-    audioLine: 'An 8-minute narration you can listen to offline',
+    pdfLine: 'A full PDF, yours to download and keep',
+    audioLine: 'A narration you can listen to offline',
     inside:
       'The reading answers the question you asked, in the terms you asked it, against your card and the period you are standing in right now. Where the honest answer is not yet, it says so and gives you the date.',
     fields: [field('q', 'long', 'Your question'), field('a', 'date', 'Your birthday')],
