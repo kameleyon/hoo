@@ -96,8 +96,21 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
    * server reads it from the report definition — and the answers travel as
    * session metadata, which is what /orders/[id] reads back afterwards.
    */
+  /** Which written answers are still blank. Dates always have a value. */
+  const blanks = report.fields.filter(
+    (f) => f.kind !== 'date' && !valueFor(f.key, f.kind).trim(),
+  );
+
   const generate = async () => {
     if (submitting) return;
+
+    // Checked here as well as on the server, so the reader is told what is
+    // missing instead of being sent to a checkout that will refuse them.
+    if (blanks.length) {
+      setError(`Please fill in ${blanks.map((f) => f.label.toLowerCase()).join(' and ')} first.`);
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
 
@@ -270,7 +283,12 @@ export function BuilderView({ report }: { report: ReportDefinition }) {
             <span className="builder__total-price">{price}</span>
           </div>
 
-          <button type="button" className="btn-primary" onClick={generate} disabled={submitting}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={generate}
+            disabled={submitting || blanks.length > 0}
+          >
             <span>{submitting ? 'Opening checkout' : 'Generate report'}</span>
             <span className="btn-primary__price">{price}</span>
           </button>

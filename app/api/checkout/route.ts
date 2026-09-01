@@ -45,8 +45,13 @@ function reportMetadata(
       continue;
     }
 
-    if (raw.length > METADATA_MAX) throw new InvalidRequest(`too long: ${field.key}`);
-    metadata[`f_${field.key}`] = raw;
+    // An empty string is a string, which is how two paid orders reached
+    // fulfilment with no question and no business name in them. Nothing that
+    // cannot be delivered is allowed to become a payment.
+    const value = raw.trim();
+    if (!value) throw new InvalidRequest(`missing field: ${field.key}`);
+    if (value.length > METADATA_MAX) throw new InvalidRequest(`too long: ${field.key}`);
+    metadata[`f_${field.key}`] = value;
   }
 
   return metadata;
